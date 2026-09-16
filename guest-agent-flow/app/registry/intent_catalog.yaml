@@ -1,0 +1,65 @@
+version: guest-intents-v3
+bands:
+  HIGH: [0.85, 1.01]
+  MEDIUM: [0.55, 0.85]
+  LOW: [0.0, 0.55]
+
+# Closed catalog of guest journeys: find, compare, book, modify, cancel, loyalty, service.
+# The classifier may only return one of these names; anything else becomes __out_of_scope__
+# and falls to the LOW ladder.
+intents:
+  - name: property_search
+    risk: advisory
+    keywords: [suite, room near, looking for a hotel, find a hotel, stay near, hotel near, family suite, near the park]
+    slots: [market, party_size, max_nightly_rate, amenities, room_type]
+  - name: stay_quote
+    risk: advisory
+    keywords: [how much for, total for, price for, quote, points or cash, pay with points, points and cash]
+    slots: [offer_id, pay_with]
+  - name: points_balance
+    risk: read
+    keywords: [points balance, how many points, my points, rewards balance, tier status]
+    slots: []
+  - name: reservation_status
+    risk: read
+    keywords: [my reservation, my booking, confirmation number, am i booked, check my stay]
+    slots: []
+  - name: property_policy
+    risk: read
+    keywords: [pet policy, parking, breakfast included, cancellation policy, check-in time, resort fee]
+    slots: []
+  - name: booking_create
+    risk: transactional
+    keywords: [book it, book the room, reserve the room, make the booking, complete the booking]
+    slots: [offer_id, pay_with]
+  - name: booking_modify
+    risk: transactional
+    keywords: [change my reservation, move my reservation, move my stay, different dates, extend my stay]
+    slots: []
+  - name: booking_cancel
+    risk: sensitive
+    keywords: [cancel my reservation, cancel my booking, refund my stay]
+    slots: []
+  - name: service_request
+    risk: read
+    keywords: [late checkout, housekeeping, extra towels, early check-in, crib]
+    slots: []
+  - name: __out_of_scope__
+    risk: none
+    keywords: []
+    slots: []
+
+# Stage 0: exact-shape rules bypass the classifier entirely at confidence 1.0. "book offer
+# OF-..." is what the offer card sends, so a booking always starts from an offer the reads
+# produced rather than from free text the model interpreted.
+rules:
+  - pattern: '^\s*book\s+offer\s+(?P<offer_id>OF-[A-Z0-9-]+)\s*$'
+    intent: booking_create
+  - pattern: '^\s*book\s+offer\s+(?P<offer_id>OF-[A-Z0-9-]+)\s+with\s+points\s*$'
+    intent: booking_create
+  - pattern: '^\s*quote\s+offer\s+(?P<offer_id>OF-[A-Z0-9-]+)\s*$'
+    intent: stay_quote
+  - pattern: '^\s*(how\s+many\s+points\s+do\s+i\s+have|what\s+is\s+my\s+points\s+balance)\s*\??\s*$'
+    intent: points_balance
+  - pattern: '^\s*(what\s+is\s+my\s+reservation|am\s+i\s+booked)\s*\??\s*$'
+    intent: reservation_status

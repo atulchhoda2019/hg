@@ -1,0 +1,28 @@
+version: brand-bundles-v2
+# Partitions, not snowflakes: every brand is a row of configuration on shared machinery.
+# The rung here is the brand's ceiling for an action; the effective rung is
+# min(brand rung, decision table rung_max), so a table row can never raise a brand above
+# what its owner agreed to.
+#   1 draft only (hand the guest to the booking page), 2 preview + confirm,
+#   3 execute + notify, 4 autonomous
+brands:
+  B-LUX:
+    name: Luxe Collection (brand-managed flagship, dedicated cell)
+    cell: dedicated
+    capabilities: [property_view, loyalty_view, reservation_view, booking_write]
+    rungs: {booking_create: 2}
+  B-HARBOR:
+    name: Harbor Hotels (franchise, shared cell)
+    cell: shared
+    capabilities: [property_view, loyalty_view, reservation_view, booking_write]
+    rungs: {booking_create: 3}
+  B-EXPRESS:
+    name: Express Stays (franchise, draft only)
+    cell: shared
+    capabilities: [property_view, loyalty_view, reservation_view, booking_write]
+    rungs: {booking_create: 1}
+  B-CLASSIC:
+    name: Classic Inns (AI search beside classic search, no agentic booking)
+    cell: shared
+    capabilities: [property_view, loyalty_view, reservation_view]
+    rungs: {booking_create: 0}

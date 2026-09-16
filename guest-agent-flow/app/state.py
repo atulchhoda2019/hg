@@ -1,0 +1,105 @@
+"""TurnState: the single typed state every node reads and writes.
+
+Parallel reads write to three separate keys (evidence_items / fact_items / calc_items)
+that `assemble` joins into `envelope`: a pydantic state object cannot carry an append
+reducer, so concurrent writes to one list would be rejected by LangGraph.
+"""
+from typing import Literal, Optional
+
+from pydantic import BaseModel, Field
+
+Band = Literal["HIGH", "MEDIUM", "LOW"]
+Posture = Literal["READ", "WRITE", "DRAFT"]
+
+
+class Intent(BaseModel):
+    name: str
+    confidence: float
+    band: Band
+    slots: dict[str, str] = {}
+    alternates: list[str] = []
+    source: Literal["rule", "classifier"] = "classifier"
+
+
+class PlanDecision(BaseModel):
+    graph_id: str
+    table_row_id: str
+    rung: int
+    budgets: dict[str, int] = {}
+    required_evidence: list[str] = []
+    posture: Posture
+    requires_capability: Optional[str] = None
+    clarify: bool = False
+    handoff: bool = False
+
+
+class EnvelopeItem(BaseModel):
+    item_id: str
+    kind: Literal["policy", "fact", "calc"]
+    source: str
+    effective_from: str
+    effective_to: Optional[str] = None
+    observed_at: str
+    freshness_policy: str = "fp_live"
+    evidence_type: str = ""
+    payload: dict = {}
+
+
+class BookingProposal(BaseModel):
+    """The only shape a booking may take. The model may emit one; it may never execute one."""
+
+    proposal_id: str
+    action: Literal["RoomBooking"]
+    guest_ref: str
+    property_id: str
+    property_name: str
+    offer_id: str
+    room_name: str
+    rate_plan: str
+    check_in: str
+    check_out: str
+    nights: int
+    nightly_rate: str
+    total_price: str
+    pay_with: Literal["cash", "points", "points_cash"]
+    points_applied: str = "0"
+    cash_due: str = "0.00"
+    cancellation: str
+    validations: list[str] = []
+    nonce: str
+    expires_at: str
+
+
+class TurnState(BaseModel):
+    conversation_id: str
+    turn_id: str
+    brand_id: str
+    guest_ref: str
+    utterance: str
+    ui_context: dict = {}
+    check_in: str = ""
+    check_out: str = ""
+    service_date: str = ""
+    turn_started_at: str = ""
+    clarify_rounds: int = 0
+
+    intent: Optional[Intent] = None
+    plan: Optional[PlanDecision] = None
+
+    offers: list[dict] = []
+    evidence_items: list[EnvelopeItem] = []
+    fact_items: list[EnvelopeItem] = []
+    calc_items: list[EnvelopeItem] = []
+    envelope: list[EnvelopeItem] = []
+    not_applicable: list[str] = []
+    abstain_reason: Optional[str] = None
+
+    draft: Optional[str] = None
+    validation: Optional[dict] = None
+    proposal: Optional[BookingProposal] = None
+    confirmed: bool = False
+    execution: Optional[dict] = None
+    receipt: Optional[dict] = None
+    response: Optional[dict] = None
+    retries: dict[str, int] = {}
+    audit: list[dict] = Field(default_factory=list)

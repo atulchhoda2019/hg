@@ -1,0 +1,27 @@
+{
+  "_comment": "Display metadata and loyalty economics. Capabilities and autonomy rungs are governed by app/registry/bundles.yaml, which is authoritative.",
+  "B-LUX": {
+    "name": "Luxe Collection",
+    "properties": ["PR-RIVERPARK", "PR-LAKEVIEW", "PR-UNIONHALL", "PR-PARKSIDE"],
+    "points_per_dollar": "160",
+    "min_points_share": "0.50"
+  },
+  "B-HARBOR": {
+    "name": "Harbor Hotels",
+    "properties": ["PR-HARBORSIDE"],
+    "points_per_dollar": "150",
+    "min_points_share": "0.50"
+  },
+  "B-EXPRESS": {
+    "name": "Express Stays",
+    "properties": ["PR-EXPRESS-OHARE"],
+    "points_per_dollar": "120",
+    "min_points_share": "0.50"
+  },
+  "B-CLASSIC": {
+    "name": "Classic Inns",
+    "properties": ["PR-CLASSIC-LOOP"],
+    "points_per_dollar": "140",
+    "min_points_share": "0.50"
+  }
+}

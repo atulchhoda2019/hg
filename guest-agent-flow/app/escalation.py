@@ -1,0 +1,169 @@
+"""Frontier escalation: a deepagents research loop that may only re-read the envelope.
+
+The ladder is deterministic (board §5): failed validator check -> one composer retry ->
+frontier -> human. This is the frontier step, and it is advisory only. The table still chose
+the graph; the agent never gets a corridor tool, a CRS handle or the network beyond its own
+model call, so the worst it can do is produce a draft that gate_output then rejects.
+
+Off unless ESCALATION_BACKEND=deepagents, so CI and the offline runtime never reach a model.
+"""
+import importlib.util
+import json
+import os
+import re
+from typing import Any, Callable
+
+ADVISORY_TOOLS = ("list_evidence", "read_evidence_item")
+
+DEFAULT_MODEL = "openai:gpt-4.1"
+
+SYSTEM_PROMPT = """You are a hotel answer composer working under a governance gate.
+
+Always start by calling list_evidence, then read_evidence_item for every id it returns. The
+guest's own availability, rates, loyalty and property records are in those items, so never
+say you cannot reach their data, and never look for a room that is not in them.
+
+You may only use the evidence items handed to you by the tools. Rules the gate enforces
+after you answer, so breaking one wastes the turn:
+- Every sentence must end with the item id it came from, in square brackets, e.g. [ev-2].
+- Every number you write must appear verbatim in an evidence payload. Never compute,
+  round, convert or estimate a number the evidence does not already state.
+- Never invent a hotel, a room, a rate, a date, a policy or a points total, and never
+  mention an email address, a card number or any other identifier.
+- If the evidence cannot answer the question, say so plainly in one cited sentence rather
+  than filling the gap.
+
+Answer in at most four short sentences. No preamble, no markdown, no bullet lists."""
+
+
+def backend() -> str:
+    return os.environ.get("ESCALATION_BACKEND", "none").lower()
+
+
+def available() -> bool:
+    """True only when the operator opted in and the extra install is present."""
+    if backend() != "deepagents":
+        return False
+    return importlib.util.find_spec("deepagents") is not None
+
+
+TOOL_NAMES = ("list_evidence", "read_evidence_item")
+
+
+def _tools(envelope: list[dict]) -> list[Callable]:
+    """Read-only closures over the already-authorized envelope. No CRS, no SOR, no writes."""
+    by_id = {item["item_id"]: item for item in envelope}
+
+    def list_evidence() -> str:
+        """List the evidence items available for this answer, without their payloads."""
+        return json.dumps([
+            {
+                "item_id": item["item_id"],
+                "kind": item["kind"],
+                "evidence_type": item["evidence_type"],
+                "effective_from": item["effective_from"],
+                "effective_to": item["effective_to"],
+            }
+            for item in envelope
+        ])
+
+    def read_evidence_item(item_id: str) -> str:
+        """Read the payload of one evidence item by its id, e.g. "ev-1"."""
+        item = by_id.get(item_id)
+        if item is None:
+            return f"no such item: {item_id}. Call list_evidence for the ids you may read."
+        return json.dumps(item["payload"])
+
+    tools = [list_evidence, read_evidence_item]
+    assert tuple(tool.__name__ for tool in tools) == TOOL_NAMES
+    return tools
+
+
+def resolve_model(spec: str | None = None) -> Any:
+    """Build the frontier chat model from ESCALATION_MODEL. It must support tool calling.
+
+      openai:gpt-4.1    any langchain provider string, keyed by that provider's env var
+      compat:qwen3:8b   any OpenAI-compatible endpoint (Ollama, Groq, OpenRouter, vLLM),
+                        addressed by ESCALATION_BASE_URL and keyed by ESCALATION_API_KEY
+    """
+    from langchain.chat_models import init_chat_model
+
+    spec = spec or os.environ.get("ESCALATION_MODEL", DEFAULT_MODEL)
+    base_url = os.environ.get("ESCALATION_BASE_URL")
+    api_key = os.environ.get("ESCALATION_API_KEY")
+    if not spec.startswith("compat:"):
+        return init_chat_model(spec)
+    spec = spec.split(":", 1)[1]
+    # An OpenAI-compatible server speaks the OpenAI wire format, so that client drives it.
+    return init_chat_model(spec, model_provider="openai", base_url=base_url,
+                           api_key=api_key or "unused", temperature=0)
+
+
+def _budget(items: int) -> int:
+    """Steps the loop may take: enough to read every item one call at a time, and answer.
+
+    A small model reads sequentially — list_evidence, then one read_evidence_item per item,
+    each costing a model step and a tool step — so a flat cap starves a large envelope.
+    """
+    return max(int(os.environ.get("ESCALATION_MAX_STEPS", "12")), 2 * items + 6)
+
+
+# A shared or free endpoint drops calls under load, and the ladder only offers one frontier
+# turn, so a dropped call would spend it. Anything else - a refusal, a bad request, an
+# exhausted step budget - is the provider's answer and goes straight to the human.
+_TRANSIENT_STATUS = re.compile(r"\b(429|500|502|503|504)\b")
+_TRANSIENT_WORDS = ("ratelimit", "rate limit", "timeout", "timed out", "connection",
+                    "overload", "temporarily", "unavailable")
+
+# A provider error can quote the request that caused it, so nothing goes into a trace
+# verbatim: a key, a bearer token or an address in the text would outlive the turn.
+_SECRETS = re.compile(
+    r"(sk-[A-Za-z0-9._\-]+|Bearer\s+\S+|[\w.+-]+@[\w-]+\.[\w.]+)", re.IGNORECASE
+)
+
+
+def _transient(exc: Exception) -> bool:
+    text = f"{type(exc).__name__} {exc}".lower()
+    if _TRANSIENT_STATUS.search(text):
+        return True
+    return any(word in text for word in _TRANSIENT_WORDS)
+
+
+def _detail(exc: Exception) -> str:
+    return _SECRETS.sub("<redacted>", str(exc))[:200]
+
+
+def compose(question: str, envelope: list[dict], model: Any = None) -> dict[str, Any]:
+    """Run the frontier agent over the envelope. Returns {"text", "model"} or {"error"}.
+
+    `model` accepts a chat model instance so the loop can be exercised without a provider.
+    """
+    from deepagents import FilesystemPermission, create_deep_agent
+
+    model = model or resolve_model()
+    agent = create_deep_agent(
+        model=model,
+        tools=_tools(envelope),
+        system_prompt=SYSTEM_PROMPT,
+        # deepagents ships a scratchpad filesystem; deny every write on it so the harness
+        # keeps only its planning notes in memory and nothing the agent does can persist.
+        permissions=[FilesystemPermission(operations=["write"], paths=["/**"], mode="deny")],
+    )
+    attempts = max(int(os.environ.get("ESCALATION_ATTEMPTS", "2")), 1)
+    for attempt in range(attempts):
+        try:
+            result = agent.invoke(
+                {"messages": [{"role": "user", "content": question}]},
+                {"recursion_limit": _budget(len(envelope))},
+            )
+            break
+        except Exception as exc:  # a frontier failure falls through to the human handoff
+            if attempt + 1 < attempts and _transient(exc):
+                continue
+            return {"error": type(exc).__name__, "detail": _detail(exc)}
+    messages = result.get("messages") or []
+    text = messages[-1].content if messages else ""
+    if isinstance(text, list):  # content blocks
+        text = " ".join(part.get("text", "") for part in text if isinstance(part, dict))
+    name = getattr(model, "model_name", None) or type(model).__name__
+    return {"text": text.strip(), "model": name}

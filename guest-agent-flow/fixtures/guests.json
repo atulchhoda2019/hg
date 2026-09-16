@@ -1,0 +1,78 @@
+{
+  "G-7001": {
+    "brand_id": "B-LUX",
+    "persona": "Platinum member with points to spend",
+    "email": "rowan.avery@example.com",
+    "tier": "Platinum",
+    "points_balance": "148000",
+    "home_market": "chicago",
+    "party_size": 4,
+    "reservations": [
+      {
+        "confirmation_number": "RES-77410",
+        "property_id": "PR-LAKEVIEW",
+        "offer_id": "OF-LAK-FAM",
+        "room_name": "Lakeview Family Suite",
+        "rate_plan": "Flexible",
+        "check_in": "2026-08-03",
+        "check_out": "2026-08-05",
+        "nights": 2,
+        "total_price": "641.24",
+        "status": "confirmed"
+      }
+    ]
+  },
+  "G-7002": {
+    "brand_id": "B-LUX",
+    "persona": "Silver member, already booked, too few points to redeem",
+    "email": "imani.okafor@example.com",
+    "tier": "Silver",
+    "points_balance": "9000",
+    "home_market": "chicago",
+    "party_size": 2,
+    "reservations": [
+      {
+        "confirmation_number": "RES-88121",
+        "property_id": "PR-RIVERPARK",
+        "offer_id": "OF-RIV-KING",
+        "room_name": "King Room",
+        "rate_plan": "Advance Purchase",
+        "check_in": "2026-06-12",
+        "check_out": "2026-06-14",
+        "nights": 2,
+        "total_price": "509.83",
+        "status": "confirmed"
+      }
+    ]
+  },
+  "G-8001": {
+    "brand_id": "B-HARBOR",
+    "persona": "Gold member on the execute-and-notify brand",
+    "email": "tomas.bergstrom@example.com",
+    "tier": "Gold",
+    "points_balance": "62000",
+    "home_market": "chicago",
+    "party_size": 3,
+    "reservations": []
+  },
+  "G-9001": {
+    "brand_id": "B-EXPRESS",
+    "persona": "Member of a franchise brand that only drafts bookings",
+    "email": "lena.fischer@example.com",
+    "tier": "Blue",
+    "points_balance": "12000",
+    "home_market": "chicago",
+    "party_size": 4,
+    "reservations": []
+  },
+  "G-9501": {
+    "brand_id": "B-CLASSIC",
+    "persona": "Brand that ships AI search beside classic search, no agentic booking",
+    "email": "marcus.deleon@example.com",
+    "tier": "Gold",
+    "points_balance": "40000",
+    "home_market": "chicago",
+    "party_size": 2,
+    "reservations": []
+  }
+}
