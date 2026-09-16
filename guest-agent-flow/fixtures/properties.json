@@ -1,0 +1,58 @@
+{
+  "PR-RIVERPARK": {
+    "brand_id": "B-LUX",
+    "name": "Riverpark Grand",
+    "market": "chicago",
+    "landmarks": ["park", "riverwalk", "downtown"],
+    "tax_rate": "0.1640",
+    "nightly_fee": "0.00"
+  },
+  "PR-LAKEVIEW": {
+    "brand_id": "B-LUX",
+    "name": "Lakeview Tower",
+    "market": "chicago",
+    "landmarks": ["lake", "park"],
+    "tax_rate": "0.1640",
+    "nightly_fee": "25.00"
+  },
+  "PR-UNIONHALL": {
+    "brand_id": "B-LUX",
+    "name": "Union Hall Suites",
+    "market": "chicago",
+    "landmarks": ["station", "downtown"],
+    "tax_rate": "0.1640",
+    "nightly_fee": "0.00"
+  },
+  "PR-PARKSIDE": {
+    "brand_id": "B-LUX",
+    "name": "Parkside Residences",
+    "market": "chicago",
+    "landmarks": ["park"],
+    "tax_rate": "0.1640",
+    "nightly_fee": "0.00"
+  },
+  "PR-HARBORSIDE": {
+    "brand_id": "B-HARBOR",
+    "name": "Harborside Hotel",
+    "market": "chicago",
+    "landmarks": ["park", "harbor"],
+    "tax_rate": "0.1640",
+    "nightly_fee": "0.00"
+  },
+  "PR-EXPRESS-OHARE": {
+    "brand_id": "B-EXPRESS",
+    "name": "Express Stays O'Hare",
+    "market": "chicago",
+    "landmarks": ["airport"],
+    "tax_rate": "0.1640",
+    "nightly_fee": "0.00"
+  },
+  "PR-CLASSIC-LOOP": {
+    "brand_id": "B-CLASSIC",
+    "name": "Classic Inn Loop",
+    "market": "chicago",
+    "landmarks": ["downtown", "park"],
+    "tax_rate": "0.1640",
+    "nightly_fee": "0.00"
+  }
+}

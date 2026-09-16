@@ -1,0 +1,153 @@
+version: guest-table-v6
+# intent x confidence band x brand capability x risk -> exactly one pre-approved graph,
+# with the step and token budgets the graph may spend. First matching row wins, so the
+# guard rows come first: a LOW band or an out-of-scope intent can never reach an ordinary
+# row, and no row raises the autonomy rung ceiling.
+rows:
+  - row: r-001
+    intent: any
+    band: LOW
+    graph: g_fallback_v1
+    posture: READ
+    rung_max: 0
+    clarify: false
+    handoff: true
+    budgets: {max_steps: 2, max_tools: 0, max_tokens: 400, deadline_ms: 2000}
+    evidence: []
+
+  - row: r-002
+    intent: __out_of_scope__
+    band: any
+    graph: g_fallback_v1
+    posture: READ
+    rung_max: 0
+    handoff: true
+    budgets: {max_steps: 2, max_tools: 0, max_tokens: 400, deadline_ms: 2000}
+    evidence: []
+
+  - row: r-010
+    intent: property_search
+    band: HIGH
+    requires_capability: property_view
+    graph: g_property_search_v1
+    posture: READ
+    rung_max: 0
+    budgets: {max_steps: 10, max_tools: 6, max_tokens: 1400, deadline_ms: 7000}
+    evidence: [availability:fp_live, property_content:fp_current, stay_quote:fp_session]
+
+  - row: r-012
+    intent: property_search
+    band: MEDIUM
+    graph: g_clarify_v1
+    posture: READ
+    rung_max: 0
+    clarify: true
+    budgets: {max_steps: 2, max_tools: 0, max_tokens: 300, deadline_ms: 2000}
+    evidence: []
+
+  - row: r-020
+    intent: stay_quote
+    band: HIGH
+    requires_capability: property_view
+    graph: g_stay_quote_v1
+    posture: READ
+    rung_max: 0
+    budgets: {max_steps: 10, max_tools: 6, max_tokens: 1400, deadline_ms: 7000}
+    evidence: [availability:fp_live, loyalty:fp_live, property_content:fp_current, stay_quote:fp_session, points_price:fp_session]
+
+  - row: r-022
+    intent: stay_quote
+    band: MEDIUM
+    graph: g_clarify_v1
+    posture: READ
+    rung_max: 0
+    clarify: true
+    budgets: {max_steps: 2, max_tools: 0, max_tokens: 300, deadline_ms: 2000}
+    evidence: []
+
+  - row: r-030
+    intent: points_balance
+    band: any
+    requires_capability: loyalty_view
+    graph: g_loyalty_readonly_v1
+    posture: READ
+    rung_max: 0
+    budgets: {max_steps: 6, max_tools: 3, max_tokens: 700, deadline_ms: 5000}
+    evidence: [loyalty:fp_live]
+
+  - row: r-034
+    intent: reservation_status
+    band: any
+    requires_capability: reservation_view
+    graph: g_reservation_readonly_v1
+    posture: READ
+    rung_max: 0
+    budgets: {max_steps: 6, max_tools: 3, max_tokens: 900, deadline_ms: 5000}
+    evidence: [reservations:fp_live, property_content:fp_current]
+
+  - row: r-040
+    intent: property_policy
+    band: any
+    requires_capability: property_view
+    graph: g_policy_readonly_v1
+    posture: READ
+    rung_max: 0
+    budgets: {max_steps: 6, max_tools: 3, max_tokens: 900, deadline_ms: 5000}
+    evidence: [property_content:fp_current]
+
+  # Agentic booking. rung_max 4 is the table's ceiling; the brand bundle decides how much
+  # of it a given brand actually bought, and the corridor runs either way.
+  - row: r-050
+    intent: booking_create
+    band: HIGH
+    requires_capability: booking_write
+    risk: transactional
+    graph: g_booking_corridor_v1
+    posture: WRITE
+    rung_max: 4
+    budgets: {max_steps: 14, max_tools: 8, max_tokens: 1600, deadline_ms: 9000}
+    evidence: [availability:fp_session, property_content:fp_current, stay_quote:fp_session]
+
+  # MEDIUM on a booking is the read-only variant of the same journey, never a booking.
+  - row: r-052
+    intent: booking_create
+    band: MEDIUM
+    requires_capability: property_view
+    graph: g_stay_quote_v1
+    posture: READ
+    rung_max: 0
+    budgets: {max_steps: 8, max_tools: 5, max_tokens: 1100, deadline_ms: 6000}
+    evidence: [availability:fp_live, property_content:fp_current, stay_quote:fp_session]
+
+  - row: r-060
+    intent: booking_modify
+    band: any
+    requires_capability: reservation_view
+    graph: g_reservation_readonly_v1
+    posture: READ
+    rung_max: 0
+    handoff: true
+    budgets: {max_steps: 6, max_tools: 3, max_tokens: 900, deadline_ms: 5000}
+    evidence: [reservations:fp_live, property_content:fp_current]
+
+  - row: r-064
+    intent: booking_cancel
+    band: any
+    requires_capability: reservation_view
+    graph: g_reservation_readonly_v1
+    posture: READ
+    rung_max: 0
+    handoff: true
+    budgets: {max_steps: 6, max_tools: 3, max_tokens: 900, deadline_ms: 5000}
+    evidence: [reservations:fp_live, property_content:fp_current]
+
+  - row: r-070
+    intent: service_request
+    band: any
+    requires_capability: reservation_view
+    graph: g_policy_readonly_v1
+    posture: READ
+    rung_max: 0
+    handoff: true
+    budgets: {max_steps: 6, max_tools: 3, max_tokens: 700, deadline_ms: 5000}
+    evidence: [property_content:fp_current]
