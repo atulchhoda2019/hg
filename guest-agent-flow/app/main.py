@@ -107,14 +107,17 @@ def confirm(req: ConfirmRequest) -> dict:
         )
     if run.url:
         RUN_URLS[req.conversationId] = run.url
-    if result.get("__interrupt__"):
-        # A confirmation that does not match is refused in-graph; the booking stays parked.
+    response = result.get("response") or {}
+    # The run parks again both when the nonce did not match and when the rate moved and the
+    # corridor rebuilt the proposal, so the refreshed preview decides which of the two it is.
+    if result.get("__interrupt__") and response.get("proposal", {}).get(
+        "proposal_id"
+    ) in (None, req.proposalId):
         raise HTTPException(status_code=409, detail={
             "kind": "confirmation_rejected",
             "message": "That confirmation does not match the booking I offered. "
                        "Nothing has been booked.",
         })
-    response = result.get("response") or {}
     # A refreshed preview is a valid outcome of confirming: the rate moved, so we ask again,
     # and a plain answer is the corridor refusing in words (expired, sold out, unstable rate).
     if response.get("kind") not in ("receipt", "preview", "answer"):

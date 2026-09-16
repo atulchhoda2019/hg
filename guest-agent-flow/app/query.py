@@ -41,6 +41,31 @@ def availability(state: TurnState) -> dict:
     return crs.search_availability(**search_params(state))
 
 
+def offers_in_question(state: TurnState) -> list[dict]:
+    """What this turn is about: the one named offer, else everything the filters left standing.
+
+    Naming an offer narrows the whole turn, so a quote prices that room rather than the
+    search results around it, and the content read stays on that property and rate plan.
+    """
+    offers = availability(state)["payload"]
+    if not (state.intent and state.intent.slots.get("offer_id")):
+        return offers
+    named = target_offer(state, offers)
+    return [named] if named else []
+
+
+def foreign_cancellation_passages(state: TurnState) -> set[str]:
+    """Cancellation passages belonging to a rate plan this turn is not quoting."""
+    wanted = {offer["cancellation_passage"] for offer in offers_in_question(state)}
+    if not wanted:
+        return set()
+    return {
+        offer["cancellation_passage"]
+        for offer in crs.offers()
+        if offer["cancellation_passage"] not in wanted
+    }
+
+
 def target_offer(state: TurnState, offers: list[dict]) -> dict | None:
     """The one offer a quote or a booking is about: the named one, else the cheapest hit."""
     offer_id = (state.intent.slots if state.intent else {}).get("offer_id")

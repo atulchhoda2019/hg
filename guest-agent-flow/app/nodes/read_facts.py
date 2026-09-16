@@ -5,7 +5,7 @@ read live - it is never served from the content index, however recently it was c
 """
 from app.audit import node_event
 from app.mocks import gdl
-from app.query import availability
+from app.query import availability, offers_in_question
 from app.state import EnvelopeItem, TurnState
 
 
@@ -24,7 +24,7 @@ def offer_row(offer: dict) -> dict:
 
 def _availability(state: TurnState) -> tuple[dict, list[dict]]:
     result = availability(state)
-    offers = result["payload"]
+    offers = offers_in_question(state)
     payload: dict = {"count": str(len(offers)), "check in": result["query"]["check_in"],
                      "check out": result["query"]["check_out"]}
     for offer in offers:

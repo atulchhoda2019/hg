@@ -1,13 +1,13 @@
 """Deterministic calculators. Every number the answer may quote originates here or in a tool."""
 from app.audit import node_event
 from app.mocks import calculator
-from app.query import availability, stay_window, target_offer
+from app.query import availability, offers_in_question, stay_window, target_offer
 from app.state import EnvelopeItem, TurnState
 
 
 def _stay_quote(state: TurnState) -> dict:
     check_in, check_out = stay_window(state)
-    return calculator.quote_stay(availability(state)["payload"], check_in, check_out)
+    return calculator.quote_stay(offers_in_question(state), check_in, check_out)
 
 
 def _points_price(state: TurnState) -> dict:

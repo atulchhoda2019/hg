@@ -14,7 +14,7 @@ intents:
     slots: [market, party_size, max_nightly_rate, amenities, room_type]
   - name: stay_quote
     risk: advisory
-    keywords: [how much for, total for, price for, quote, points or cash, pay with points, points and cash]
+    keywords: [how much for, total for, price for, what would, cost, quote, points or cash, pay with points, points and cash]
     slots: [offer_id, pay_with]
   - name: points_balance
     risk: read

@@ -68,6 +68,29 @@ def test_confirm_rejects_a_bad_nonce_and_accepts_the_real_one(client):
     assert good.json()["receipt"]["verified_confirmation_number"]
 
 
+def test_a_moved_rate_comes_back_as_a_fresh_preview_not_a_refusal(client, monkeypatch):
+    """The rebuilt proposal must reach the guest: parking again is not a rejected nonce."""
+    monkeypatch.setenv("RATE_CHANGE_ONCE", "1")
+    first = _turn(client, "book offer OF-RIV-FAM", "C-API-RATE").json()["proposal"]
+
+    refreshed = client.post("/confirm", json={"conversationId": "C-API-RATE",
+                                              "proposalId": first["proposal_id"],
+                                              "nonce": first["nonce"]})
+    assert refreshed.status_code == 200
+    body = refreshed.json()
+    assert body["kind"] == "preview"
+    assert body["proposal"]["proposal_id"] != first["proposal_id"]
+    assert body["proposal"]["nightly_rate"] != first["nightly_rate"]
+    assert sor.receipts() == {}, "a moved rate is never paid without a second confirmation"
+
+    booked = client.post("/confirm", json={"conversationId": "C-API-RATE",
+                                           "proposalId": body["proposal"]["proposal_id"],
+                                           "nonce": body["proposal"]["nonce"]})
+    assert booked.status_code == 200
+    assert booked.json()["receipt"]["verified_confirmation_number"]
+    assert len(sor.receipts()) == 1
+
+
 def test_confirming_nothing_is_a_409(client):
     assert client.post("/confirm", json={"conversationId": "C-API-EMPTY",
                                          "proposalId": "PRP-x", "nonce": "y"}).status_code == 409

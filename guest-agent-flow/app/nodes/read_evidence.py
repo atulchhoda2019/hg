@@ -7,7 +7,7 @@ quoted back as if it were an option.
 """
 from app.audit import node_event
 from app.mocks import content, crs, gdl
-from app.query import availability
+from app.query import foreign_cancellation_passages, offers_in_question
 from app.state import EnvelopeItem, TurnState
 
 EVIDENCE_TYPE = "property_content"
@@ -27,7 +27,7 @@ def property_scope(state: TurnState) -> list[str]:
         prop = crs.properties().get(scoped)
         return [scoped] if prop and prop["brand_id"] == state.brand_id else []
     if any(spec.split(":")[0] == "availability" for spec in state.plan.required_evidence):
-        return [offer["property_id"] for offer in availability(state)["payload"]]
+        return [offer["property_id"] for offer in offers_in_question(state)]
     if any(spec.split(":")[0] == "reservations" for spec in state.plan.required_evidence):
         booked = gdl.get_reservations(state.guest_ref)["payload"]["reservations"]
         return [row["property_id"] for row in booked.values()]
@@ -42,6 +42,8 @@ def fetch(state: TurnState, policy: str) -> list[EnvelopeItem]:
         service_date=state.service_date,
         query=state.utterance,
     )
+    # The terms of a rate plan the guest is not being quoted are not evidence for this turn.
+    foreign = foreign_cancellation_passages(state)
     return [
         EnvelopeItem(
             item_id=f"tmp-p{n}",
@@ -54,7 +56,9 @@ def fetch(state: TurnState, policy: str) -> list[EnvelopeItem]:
             evidence_type=EVIDENCE_TYPE,
             payload={"text": passage["text"], "passage_id": passage["passage_id"]},
         )
-        for n, passage in enumerate(result["payload"], start=1)
+        for n, passage in enumerate(
+            [p for p in result["payload"] if p["passage_id"] not in foreign], start=1
+        )
     ]
 
 

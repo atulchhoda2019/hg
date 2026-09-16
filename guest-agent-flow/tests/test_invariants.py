@@ -127,3 +127,16 @@ def test_i11_the_frontier_never_gets_a_tool_that_can_change_anything():
     assert set(names) == {"list_evidence", "read_evidence_item"}
     forbidden = ("book", "hold", "confirm", "execute", "cancel", "write", "pay")
     assert not [n for n in names if any(word in n for word in forbidden)]
+
+
+def test_i12_naming_an_offer_narrows_the_whole_turn_to_that_rate_plan(graph):
+    """A quote prices the room asked about, with the terms of the rate plan it is on."""
+    result = run_turn(graph, make_state("quote offer OF-RIV-KING"))
+
+    offers = {o["offer_id"] for o in result["response"]["offers"]}
+    assert offers == {"OF-RIV-KING"}
+    text = result["response"]["text"]
+    assert "Advance Purchase rates at Riverpark Grand are prepaid" in text
+    assert "Flexible rates at Riverpark Grand" not in text, "not this rate plan's terms"
+    passages = {item.payload.get("passage_id") for item in result["envelope"]}
+    assert "PSG-RIV-CANCEL" not in passages
