@@ -54,18 +54,6 @@ def offers_in_question(state: TurnState) -> list[dict]:
     return [named] if named else []
 
 
-def foreign_cancellation_passages(state: TurnState) -> set[str]:
-    """Cancellation passages belonging to a rate plan this turn is not quoting."""
-    wanted = {offer["cancellation_passage"] for offer in offers_in_question(state)}
-    if not wanted:
-        return set()
-    return {
-        offer["cancellation_passage"]
-        for offer in crs.offers()
-        if offer["cancellation_passage"] not in wanted
-    }
-
-
 def target_offer(state: TurnState, offers: list[dict]) -> dict | None:
     """The one offer a quote or a booking is about: the named one, else the cheapest hit."""
     offer_id = (state.intent.slots if state.intent else {}).get("offer_id")

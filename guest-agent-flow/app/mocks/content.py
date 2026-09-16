@@ -23,8 +23,18 @@ def _effective(passage: dict, service_date: str) -> bool:
     return passage["effective_to"] is None or passage["effective_to"] >= service_date
 
 
-@tool_span("content.retrieve", "v7")
+def _in_scope(passage: dict, room_types: set[str] | None, rate_plans: set[str] | None) -> bool:
+    """A passage written about one room or one rate plan only describes that room or rate."""
+    if passage["room_type"] and room_types is not None and passage["room_type"] not in room_types:
+        return False
+    if passage["rate_plan"] and rate_plans is not None and passage["rate_plan"] not in rate_plans:
+        return False
+    return True
+
+
+@tool_span("content.retrieve", "v8")
 def retrieve(brand_id: str, property_ids: list[str], service_date: str, query: str,
+             room_types: set[str] | None = None, rate_plans: set[str] | None = None,
              limit: int = 4) -> dict:
     fault = os.environ.get("CONTENT_EMPTY")
     if fault == "always" or (fault == "1" and not os.environ.get("_CONTENT_EMPTY_CONSUMED")):
@@ -38,6 +48,7 @@ def retrieve(brand_id: str, property_ids: list[str], service_date: str, query: s
             if p["brand_id"] == brand_id
             and (p["property_id"] in allowed or p["property_id"] == "*")
             and _effective(p, service_date)
+            and _in_scope(p, room_types, rate_plans)
         ]
         text = query.lower()
         terms = {t for t in text.replace("?", " ").replace(",", " ").split() if t}
@@ -50,12 +61,12 @@ def retrieve(brand_id: str, property_ids: list[str], service_date: str, query: s
 
     return {
         "payload": hits,
-        "source": "content.property.v7",
+        "source": "content.property.v8",
         "observed_at": datetime.now(timezone.utc).isoformat(),
     }
 
 
-@tool_span("content.passage", "v7")
+@tool_span("content.passage", "v8")
 def passage(passage_id: str, service_date: str) -> dict | None:
     """Fetch one passage by id, as it stands on the stay date. Used for cancellation terms."""
     for item in _passages():

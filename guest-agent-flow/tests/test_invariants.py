@@ -140,3 +140,5 @@ def test_i12_naming_an_offer_narrows_the_whole_turn_to_that_rate_plan(graph):
     assert "Flexible rates at Riverpark Grand" not in text, "not this rate plan's terms"
     passages = {item.payload.get("passage_id") for item in result["envelope"]}
     assert "PSG-RIV-CANCEL" not in passages
+    # The Family Suite's breakfast is another room on another rate: not evidence about this one.
+    assert "PSG-RIV-BREAKFAST" not in passages and "PSG-RIV-FAMILY" not in passages

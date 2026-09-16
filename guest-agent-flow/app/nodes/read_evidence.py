@@ -7,7 +7,7 @@ quoted back as if it were an option.
 """
 from app.audit import node_event
 from app.mocks import content, crs, gdl
-from app.query import foreign_cancellation_passages, offers_in_question
+from app.query import offers_in_question
 from app.state import EnvelopeItem, TurnState
 
 EVIDENCE_TYPE = "property_content"
@@ -34,16 +34,26 @@ def property_scope(state: TurnState) -> list[str]:
     return [pid for pid, prop in crs.properties().items() if prop["brand_id"] == state.brand_id]
 
 
+def offer_scope(state: TurnState) -> tuple[set[str] | None, set[str] | None]:
+    """Rooms and rate plans this turn is about, so other rooms' content is not evidence for it."""
+    offers = offers_in_question(state)
+    if not offers:
+        return None, None
+    return ({offer["room_type"] for offer in offers},
+            {offer["rate_plan"] for offer in offers})
+
+
 def fetch(state: TurnState, policy: str) -> list[EnvelopeItem]:
     scope = property_scope(state)
+    room_types, rate_plans = offer_scope(state)
     result = content.retrieve(
         brand_id=state.brand_id,
         property_ids=scope,
         service_date=state.service_date,
         query=state.utterance,
+        room_types=room_types,
+        rate_plans=rate_plans,
     )
-    # The terms of a rate plan the guest is not being quoted are not evidence for this turn.
-    foreign = foreign_cancellation_passages(state)
     return [
         EnvelopeItem(
             item_id=f"tmp-p{n}",
@@ -56,9 +66,7 @@ def fetch(state: TurnState, policy: str) -> list[EnvelopeItem]:
             evidence_type=EVIDENCE_TYPE,
             payload={"text": passage["text"], "passage_id": passage["passage_id"]},
         )
-        for n, passage in enumerate(
-            [p for p in result["payload"] if p["passage_id"] not in foreign], start=1
-        )
+        for n, passage in enumerate(result["payload"], start=1)
     ]
 
 
