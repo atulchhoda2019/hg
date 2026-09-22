@@ -5,6 +5,7 @@ for the guest to finish on the brand site, rung 2 previews and waits for a nonce
 and 4 run the corridor without pausing but keep revalidation, idempotency, read-after-write
 verification and the receipt.
 """
+from app import screens
 from app.audit import node_event
 from app.mocks import gdl
 from app.registry import bundles
@@ -49,6 +50,8 @@ def run(state: TurnState) -> dict:
 
     updates: dict = {}
     if plan.posture == "WRITE":
+        # Advisory second opinion, recorded and not acted on: the table decided the posture.
+        screens.asks_for_a_state_change(state)
         rung = effective_rung(state.brand_id, intent.name, plan.rung)
         if rung == 0:
             node_event(state, "gate_plan", allowed=False, reason="rung_zero")

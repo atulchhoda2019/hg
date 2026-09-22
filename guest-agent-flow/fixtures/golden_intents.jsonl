@@ -1,0 +1,30 @@
+{"utterance": "family suite near the park under $300 with breakfast", "intent": "property_search"}
+{"utterance": "looking for a hotel near the riverwalk for 4", "intent": "property_search"}
+{"utterance": "stay near the lake for the conference", "intent": "property_search"}
+{"utterance": "how much for the family suite for three nights", "intent": "stay_quote"}
+{"utterance": "what would that cost with points and cash", "intent": "stay_quote"}
+{"utterance": "price for the king room next weekend", "intent": "stay_quote"}
+{"utterance": "how many points do i have", "intent": "points_balance"}
+{"utterance": "what is my tier status", "intent": "points_balance"}
+{"utterance": "my rewards balance please", "intent": "points_balance"}
+{"utterance": "check my stay next week", "intent": "reservation_status"}
+{"utterance": "am i booked for friday", "intent": "reservation_status"}
+{"utterance": "what is my confirmation number", "intent": "reservation_status"}
+{"utterance": "what is the pet policy at the riverpark", "intent": "property_policy"}
+{"utterance": "is breakfast included on that rate", "intent": "property_policy"}
+{"utterance": "what is the check-in time", "intent": "property_policy"}
+{"utterance": "book the room we just looked at", "intent": "booking_create"}
+{"utterance": "please complete the booking", "intent": "booking_create"}
+{"utterance": "reserve the room with points", "intent": "booking_create"}
+{"utterance": "change my reservation to different dates", "intent": "booking_modify"}
+{"utterance": "extend my stay by one night", "intent": "booking_modify"}
+{"utterance": "move my reservation to next week", "intent": "booking_modify"}
+{"utterance": "cancel my reservation", "intent": "booking_cancel"}
+{"utterance": "refund my stay please", "intent": "booking_cancel"}
+{"utterance": "cancel my booking for saturday", "intent": "booking_cancel"}
+{"utterance": "can i get a late checkout", "intent": "service_request"}
+{"utterance": "please send extra towels", "intent": "service_request"}
+{"utterance": "we need a crib in the room", "intent": "service_request"}
+{"utterance": "tell me a joke about hotels", "intent": "__out_of_scope__"}
+{"utterance": "who won the game last night", "intent": "__out_of_scope__"}
+{"utterance": "what is the weather tomorrow", "intent": "__out_of_scope__"}

@@ -19,6 +19,9 @@ class Intent(BaseModel):
     slots: dict[str, str] = {}
     alternates: list[str] = []
     source: Literal["rule", "classifier"] = "classifier"
+    decider: Optional[str] = None
+    decider_version: Optional[str] = None
+    calibrated: bool = True
 
 
 class PlanDecision(BaseModel):

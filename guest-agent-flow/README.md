@@ -6,16 +6,17 @@ loyalty, reservations, reservation SOR). It is the hospitality twin of the benef
 `atulchhoda2019/ibmp` — same governance, hotel nouns — and is standalone: its own intent
 catalog, decision table, brand bundles and fixtures.
 
-Models interpret, tables decide. The classifier only proposes an intent; `decision_table.yaml`
-(`guest-table-v6`) picks the graph, the posture, the autonomy rung, the budgets and the evidence
+Models interpret, tables decide. The decider only proposes an intent; `decision_table.yaml`
+(`guest-table-v7`) picks the graph, the posture, the autonomy rung, the budgets and the evidence
 the turn may read. Nothing the model emits creates a route, a tool call, a price or a booking.
 
 ## Run it
 
 ```bash
 pip install -r requirements.txt
-python -m pytest -q                  # 40 tests
+python -m pytest -q                  # 55 tests
 python scripts/validate_config.py    # served-config build gate
+python scripts/decider_experiment.py # compare the deciders on the frozen golden set
 uvicorn app.main:app --port 8300
 ```
 
@@ -67,6 +68,32 @@ ceiling, amenity and landmark are applied as hard filters against CRS inventory 
 property content is read, so a beautifully written page for a sold-out or out-of-budget room can
 never reach the answer. Rates, taxes, totals, points and points-and-cash splits are Decimal
 arithmetic in `app/mocks/calculator.py`; the model never computes money.
+
+## The typed decider
+
+Every question the runtime asks a model is one of three shapes — `choice` over a closed list,
+`score` over an ordinal scale, `noul` for a yes/no with a probability — so the model returns a
+typed answer with probabilities instead of prose that has to be parsed and trusted.
+`app/decider.py` is the port; `app/mocks/decider.py` registers the three implementations:
+
+| Decider | What it is | Where the state goes |
+| --- | --- | --- |
+| `slm_incumbent` | the existing small classifier, the fallback | in process |
+| `dev_local` | a self-hosted `dev-0.4b` in the VPC | in process |
+| `jev_api` | the hosted typed model | redacted to references before egress |
+
+Swapping one for another is a config edit (`deciders:` on the decision table, or `DECIDER` for an
+experiment), never a graph change. Three calls use it: planner stage 1 (a `choice` over the
+catalog), and two advisory `noul` screens — does this utterance ask for a state change, and does
+the confirmed proposal match what was asked — recorded next to the deterministic decision rather
+than replacing it.
+
+The band comes off the calibrated probability and the clarifying options are the top three of the
+same vector, so what the ladder asks and what the model believed cannot drift apart. Calibration
+is pinned to a choice-set version (`fixtures/decider_calibration.json`): edit the catalog and
+every pairing is uncalibrated until the harness re-runs, capped below the HIGH edge so an
+uncalibrated model can ask but not act. The build gate refuses to serve a decider with no
+calibration for the served catalog, and criteria are labels only — facts live in the state.
 
 ## Governance
 

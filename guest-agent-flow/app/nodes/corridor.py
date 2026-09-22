@@ -12,6 +12,7 @@ from decimal import Decimal
 
 from langgraph.types import interrupt
 
+from app import screens
 from app.audit import node_event
 from app.mocks import calculator, content, crs, gdl, sor
 from app.query import search_params, stay_window, target_offer
@@ -218,6 +219,8 @@ def revalidate(state: TurnState) -> dict:
     proposal is rebuilt and confirmed again, and an autonomous rung drops to asking.
     """
     proposal = state.proposal
+    # Advisory: the confirmed proposal is screened against the ask, and the read below decides.
+    screens.confirmation_matches_ask(state, proposal)
     offer = crs.get_offer(proposal.offer_id)
     passed, failure = deterministic_checks(state, offer, proposal.pay_with)
     if failure:
