@@ -1,0 +1,12 @@
+{
+  "_note": "Calibration is valid only for the choice-set version it was measured on (I8). A catalog edit invalidates every row here until the experiment harness is re-run.",
+  "slm_incumbent": {
+    "guest-intents-v3": {"measured_on": "2026-09-02", "ece": 0.061, "top1": 0.91, "top3": 0.98}
+  },
+  "dev_local": {
+    "guest-intents-v3": {"measured_on": "2026-09-05", "ece": 0.038, "top1": 0.93, "top3": 0.99}
+  },
+  "jev_api": {
+    "guest-intents-v3": {"measured_on": "2026-09-05", "ece": 0.029, "top1": 0.94, "top3": 0.99}
+  }
+}

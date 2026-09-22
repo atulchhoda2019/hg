@@ -21,3 +21,5 @@ jobs:
         run: python scripts/validate_config.py
       - name: Tests
         run: python -m pytest -q
+      - name: Decider golden set
+        run: python scripts/decider_experiment.py

@@ -10,6 +10,7 @@ import pathlib
 import re
 from typing import Optional
 
+from app import decider as decider_port
 from app.audit import emit, node_event
 from app.registry import catalog, decision_table, intent_names
 from app.state import Intent, PlanDecision, TurnState
@@ -106,35 +107,46 @@ def band_for(confidence: float) -> str:
     return "LOW"
 
 
-def stage1_classifier(utterance: str) -> Intent:
-    """Keyword-scored lookup over the closed catalog. Never invents a label."""
-    text = utterance.lower()
-    scored: list[tuple[float, str]] = []
-    for spec in catalog()["intents"]:
-        if spec["name"] == "__out_of_scope__":
-            continue
-        # A longer phrase is stronger evidence than a bare word: "family suite" beats "suite".
-        score = sum(1 + 0.4 * (len(kw.split()) - 1) for kw in spec["keywords"] if kw in text)
-        if score:
-            scored.append((score, spec["name"]))
-    scored.sort(key=lambda row: (-row[0], row[1]))
+def choice_set() -> list[str]:
+    """The versioned choice set: every in-scope catalog label, in catalog order.
 
-    if not scored:
-        return Intent(name="__out_of_scope__", confidence=0.2, band="LOW", slots={}, alternates=[])
+    Order and membership are part of the model input (I8), so this is built from the
+    catalog file alone and never assembled ad hoc at the call site.
+    """
+    return [spec["name"] for spec in catalog()["intents"] if spec["name"] != "__out_of_scope__"]
 
-    top, top_name = scored[0]
-    runner = scored[1][0] if len(scored) > 1 else 0.0
-    if runner >= 0.7 * top:
-        confidence = 0.72          # near tie: MEDIUM, so the ladder asks instead of guessing
-    else:
-        confidence = min(0.55 + 0.20 * top + 0.12 * (top - runner), 0.97)
-    name = top_name if top_name in intent_names() else "__out_of_scope__"
+
+def stage1_classifier(utterance: str, brand_id: str = "") -> Intent:
+    """One typed `choice` over the closed catalog. Never invents a label.
+
+    The band reads off the calibrated probability, and the clarifying options are the
+    top three of the same probability vector, so what the ladder asks and what the
+    model believed cannot drift apart.
+    """
+    model = decider_port.for_brand(brand_id)
+    answer = model.answer(utterance, {
+        "intent": decider_port.choice_question(
+            "Which guest journey is this utterance asking for?", choice_set()),
+    })["intent"]
+
+    probabilities: dict[str, float] = answer["probabilities"]
+    if not answer["criterion"]:
+        return Intent(name="__out_of_scope__", confidence=0.2, band="LOW", slots={},
+                      alternates=[], decider=model.name, decider_version=model.version,
+                      calibrated=answer["calibrated"])
+
+    ranked = sorted(probabilities.items(), key=lambda row: (-row[1], row[0]))
+    confidence = round(probabilities[answer["criterion"]], 2)
+    name = answer["criterion"] if answer["criterion"] in intent_names() else "__out_of_scope__"
     return Intent(
         name=name,
-        confidence=round(confidence, 2),
+        confidence=confidence,
         band=band_for(confidence),
         slots=extract_slots(name, utterance),
-        alternates=[n for _, n in scored[1:3]],
+        alternates=[n for n, _ in ranked[1:3]],
+        decider=model.name,
+        decider_version=model.version,
+        calibrated=answer["calibrated"],
     )
 
 
@@ -186,7 +198,7 @@ def log_fallback(state: TurnState, intent: Intent) -> None:
 
 def run(state: TurnState) -> dict:
     intent = resolve_clarification(state) or stage0_rules(state.utterance) \
-        or stage1_classifier(state.utterance)
+        or stage1_classifier(state.utterance, state.brand_id)
 
     # Stage 3: a second unresolved ambiguity is not asked again, it drops to LOW.
     if intent.band == "MEDIUM" and state.clarify_rounds >= 1:
@@ -229,7 +241,9 @@ def run(state: TurnState) -> dict:
         updates["clarify_rounds"] = state.clarify_rounds + 1
 
     node_event(state, "planner", source=intent.source, confidence=intent.confidence,
-               row=row["row"], graph_id=plan.graph_id, posture=plan.posture, slots=intent.slots)
+               row=row["row"], graph_id=plan.graph_id, posture=plan.posture, slots=intent.slots,
+               decider=intent.decider, decider_version=intent.decider_version,
+               calibrated=intent.calibrated, catalog_version=decider_port.catalog_version())
     emit({"conversation_id": state.conversation_id, "node": "planner.trace_metadata",
           "graph_id": plan.graph_id, "table_row_id": plan.table_row_id})
     return updates

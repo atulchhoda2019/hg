@@ -1,4 +1,13 @@
-version: guest-table-v6
+version: guest-table-v7
+# Which typed decider answers the planner's choice question. Promotion is a canary per
+# brand and rollback is flipping one field here; the graph does not change either way.
+deciders:
+  default: slm_incumbent
+  by_brand:
+    B-LUX: slm_incumbent
+    B-HARBOR: slm_incumbent
+    B-EXPRESS: slm_incumbent
+    B-CLASSIC: slm_incumbent
 # intent x confidence band x brand capability x risk -> exactly one pre-approved graph,
 # with the step and token budgets the graph may spend. First matching row wins, so the
 # guard rows come first: a LOW band or an out-of-scope intent can never reach an ordinary

@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app.nodes import read_calc, read_evidence, read_facts  # noqa: E402
 from app.registry import bundles, catalog, decision_table, freshness, versions  # noqa: E402
-from app.mocks import crs, gdl  # noqa: E402
+from app.mocks import crs, decider as decider_mocks, gdl  # noqa: E402
 
 POSTURES = {"READ", "WRITE"}
 FACT_TYPES = set(read_facts.READERS)
@@ -81,6 +81,19 @@ def errors() -> list[str]:
     lo_low, hi_low = catalog()["bands"]["LOW"]
     if not (lo_low == 0.0 and hi_low == lo_med and hi_med == lo_high and hi_high > 1.0):
         out.append("confidence bands must partition [0, 1]")
+
+    # I8: a decider may only be served where its calibration was measured on THIS choice set.
+    configured = decision_table().get("deciders") or {}
+    calibration = decider_mocks.calibration()
+    named = [configured.get("default", "slm_incumbent"), *(configured.get("by_brand") or {}).values()]
+    for brand_id in (configured.get("by_brand") or {}):
+        if brand_id not in brands:
+            out.append(f"deciders: {brand_id} has no bundle")
+    for name in dict.fromkeys(named):
+        if name not in decider_mocks.IMPLEMENTATIONS:
+            out.append(f"deciders: {name} is not a registered implementation")
+        elif catalog()["version"] not in calibration.get(name, {}):
+            out.append(f"deciders: {name} has no calibration for {catalog()['version']}")
 
     # Every brand is a configured cell of the same machinery: no property may be orphaned,
     # and no property may be sold by a brand that does not own it.

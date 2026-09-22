@@ -38,10 +38,15 @@ def intent_names() -> set[str]:
     return {i["name"] for i in catalog()["intents"]}
 
 
+def default_decider() -> str:
+    return (decision_table().get("deciders") or {}).get("default", "slm_incumbent")
+
+
 def versions() -> dict[str, str]:
     return {
         "catalog_version": catalog()["version"],
         "table_version": decision_table()["version"],
         "bundle_version": bundles()["version"],
         "freshness_version": freshness()["version"],
+        "decider": default_decider(),
     }
