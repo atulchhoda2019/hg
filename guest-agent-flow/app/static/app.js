@@ -215,6 +215,7 @@ const TRACE_FIELDS = [
   "kind", "items", "types", "offers", "passages", "count", "passed", "reasons",
   "citations", "stale", "refetched", "rung", "checks", "outcome", "replayed",
   "verified", "refreshed", "was", "now", "model", "attempt", "timeout",
+  "decider", "decider_version", "calibrated", "catalog_version", "probability_yes",
 ];
 
 function renderTrace(events, runUrl) {
