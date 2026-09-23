@@ -89,6 +89,45 @@ catalog), and two advisory `noul` screens — does this utterance ask for a stat
 the confirmed proposal match what was asked — recorded next to the deterministic decision rather
 than replacing it.
 
+### Where Jev is used, and why it is the right shape for these three questions
+
+| Call site | Question type | What the runtime does with the answer |
+| --- | --- | --- |
+| planner stage 1, `app/nodes/planner.py` | `choice` over the 9 catalog labels | the winning label picks the decision-table row; its probability picks the band (act / clarify / hand off) and the runner-up labels *are* the clarify options |
+| pre-corridor screen, `app/screens.py` | `noul` — "does this utterance ask for a state change?" | a high yes on a turn the table routed READ-only is recorded as a disagreement for review; it can stop a write, never start one |
+| pre-execute screen, `app/screens.py` | `noul` — "does the confirmed proposal match what was asked?" | a low yes on a nonce-confirmed proposal blocks the write before the SOR call |
+
+Stage 0 rules answer the unambiguous utterances for free, so Jev is only asked the ones that
+are actually ambiguous — "family suite near the park, under $300, with breakfast" costs
+$0.00015 and 358 input tokens; "how many points do I have" costs nothing at all.
+
+Why a typed decision API rather than a chat model for these:
+
+- **The output is a distribution, not a sentence.** A chat model's "I'm fairly confident this
+  is a booking request" has no number in it; Jev returns `{property_search: 0.83, stay_quote:
+  0.12, booking_create: 0.05}`. Bands, abstention and the clarify options are all read off
+  that vector, so the threshold that decides whether the assistant acts is a tunable number
+  rather than a prompt.
+- **The label set is closed by the request, not by instructions.** Criteria are sent as the
+  catalog's own labels, so there is no free-text answer to parse, no invented intent, no
+  "booking_create." with a period, and no schema-repair retry. A renamed catalog is a new
+  choice-set version and invalidates the calibration automatically.
+- **It is calibratable, and we hold it to that.** A pairing of model version and choice-set
+  version is uncalibrated until `scripts/decider_experiment.py` measures ECE against the
+  golden set; until then its probabilities are capped below the HIGH edge, so an unmeasured
+  model can ask a clarifying question but cannot cause an action. That gate is only
+  meaningful because the answer is a probability in the first place.
+- **Facts never leave.** A `choice` question carries labels; the guest's words go in `state`,
+  redacted. There is no prompt in which a rate, a points balance or a PII field has to be
+  restated for the model to choose well.
+- **Cost is the shape of the task.** All of a turn's typed questions go in one batched call —
+  a 9-way decision measured at 358 in / 90 out tokens and $0.00015 — against a chat completion
+  that has to write prose and then have it parsed back.
+
+What Jev is deliberately *not* used for: it never picks the graph, reads a fact, computes money
+or touches the corridor. It answers the three questions above and the tables do the rest — and
+if it is slow, refused or down, `slm_incumbent` answers the same question in process.
+
 The band comes off the calibrated probability and the clarifying options are the top three of the
 same vector, so what the ladder asks and what the model believed cannot drift apart. Calibration
 is pinned to a choice-set version (`fixtures/decider_calibration.json`): edit the catalog and
@@ -114,6 +153,16 @@ Run the smoke first. `scripts/decider_experiment.py` will happily send the whole
 set to a keyed endpoint and spend real credit; the smoke sends one question. Jev is
 prepaid, so an account with no balance answers `HTTP 402 Insufficient credits` — the
 smoke prints the vendor's own words, and a turn falls back to the incumbent.
+
+A verified live answer looks like this:
+
+```
+POST https://jevtypesafeai.com/api/v1/decide  model=jev-1.13.0
+answered by jev-1.13.0  calibrated=False
+criterion   property_search
+top 3       {"property_search": 0.8, "stay_quote": 0.17, "booking_create": 0.03}
+usage       {"input_tokens": 358, "output_tokens": 90, "cost_usd": 0.000151}
+```
 
 Three properties hold on that path. The state is redacted before egress and the choice set
 goes as bare labels. A model version is uncalibrated until
