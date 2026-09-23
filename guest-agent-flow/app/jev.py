@@ -34,6 +34,18 @@ class JevUnavailable(RuntimeError):
     """The hosted model did not answer: the incumbent takes the question."""
 
 
+def _detail(error: urllib.error.HTTPError) -> str:
+    """The vendor's own words: 'insufficient credits' is a different fix from a bad key."""
+    try:
+        body = json.loads(error.read())
+    except Exception:
+        return ""
+    if isinstance(body, dict):
+        detail = body.get("error") or body.get("detail") or ""
+        return detail.get("message", "") if isinstance(detail, dict) else str(detail)
+    return ""
+
+
 def api_key() -> str:
     return os.environ.get("JEV_API_KEY") or os.environ.get("TYPESAFE_API_KEY") or ""
 
@@ -63,7 +75,7 @@ def _post(body: dict) -> dict:
             with urllib.request.urlopen(request, timeout=timeout) as response:
                 return json.loads(response.read())
         except urllib.error.HTTPError as error:
-            last = f"HTTP {error.code}"
+            last = f"HTTP {error.code} {_detail(error)}".strip()
             if error.code not in RETRY_STATUS:
                 raise JevUnavailable(last) from error
         except (urllib.error.URLError, TimeoutError, OSError, ValueError) as error:
@@ -97,6 +109,7 @@ class JevApi:
     def __init__(self, fallback: Any = None) -> None:
         self.version = model_version()
         self.last_usage: dict | None = None
+        self.last_error: str | None = None
         self._fallback = fallback
 
     def _calibrated(self) -> bool:
@@ -136,10 +149,12 @@ class JevApi:
             self.last_usage = response.get("usage")
             self.version = response.get("model", self.version)
             calibrated = self._calibrated()
+            self.last_error = None
             return {qid: self._answer_body(qid, question, response["answers"][qid], calibrated)
                     for qid, question in questions.items()}
         except (JevUnavailable, KeyError, TypeError, ValueError) as error:
             reason = str(error) or error.__class__.__name__
+            self.last_error = reason
             emit({"node": "decider.fallback", "decider": self.name,
                   "reason": reason, "answered_by": self.fallback().name})
             return self.fallback().answer(state, questions)

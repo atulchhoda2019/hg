@@ -181,6 +181,19 @@ def test_a_retryable_status_is_retried_and_a_refusal_is_not(hosted, monkeypatch)
     assert calls["n"] == 1
 
 
+def test_the_vendors_own_reason_survives_the_fallback(hosted, monkeypatch):
+    """'insufficient credits' and 'bad key' need different fixes, so keep the words."""
+    body = io.BytesIO(b'{"error":"Insufficient credits - top up to continue."}')
+    monkeypatch.setattr(jev.urllib.request, "urlopen", lambda request, timeout=None: (
+        _ for _ in ()).throw(urllib.error.HTTPError(jev.DEFAULT_URL, 402, "no", {}, body)))
+
+    model = decider_port.get("jev_api")
+    model.answer(SEARCH, {
+        "intent": decider_port.choice_question("Which journey?", planner.choice_set()),
+    })
+    assert model.last_error == "HTTP 402 Insufficient credits - top up to continue."
+
+
 def test_the_turn_records_which_model_actually_decided(graph, hosted, monkeypatch):
     monkeypatch.setenv("DECIDER", "jev_api")
     state = make_state("how much for the family suite for three nights")

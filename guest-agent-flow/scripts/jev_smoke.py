@@ -33,7 +33,8 @@ def main() -> int:
     })["intent"]
 
     if answer["decider"] != jev.JevApi.name:
-        print(f"the hosted call did not answer; {answer['decider']} did. See the audit log.")
+        print(f"the hosted call did not answer: {model.last_error}")
+        print(f"{answer['decider']} answered instead, which is what a live turn would do too")
         return 1
 
     top = sorted(answer["probabilities"].items(), key=lambda kv: -kv[1])[:3]

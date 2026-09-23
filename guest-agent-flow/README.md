@@ -14,7 +14,7 @@ the turn may read. Nothing the model emits creates a route, a tool call, a price
 
 ```bash
 pip install -r requirements.txt
-python -m pytest -q                  # 66 tests
+python -m pytest -q                  # 69 tests
 python scripts/validate_config.py    # served-config build gate
 python scripts/decider_experiment.py # compare the deciders on the frozen golden set
 uvicorn app.main:app --port 8300
@@ -111,7 +111,9 @@ DECIDER=jev_api uvicorn app.main:app --port 8400
 ```
 
 Run the smoke first. `scripts/decider_experiment.py` will happily send the whole golden
-set to a keyed endpoint and spend real credit; the smoke sends one question.
+set to a keyed endpoint and spend real credit; the smoke sends one question. Jev is
+prepaid, so an account with no balance answers `HTTP 402 Insufficient credits` — the
+smoke prints the vendor's own words, and a turn falls back to the incumbent.
 
 Three properties hold on that path. The state is redacted before egress and the choice set
 goes as bare labels. A model version is uncalibrated until
