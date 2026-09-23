@@ -9,14 +9,17 @@ The choice set is part of the model input (invariant I8): probabilities only mea
 something relative to the catalog version they were calibrated on, so the version
 travels with every answer and an uncalibrated pairing can never reach the HIGH band.
 """
+import json
 import os
 from typing import Any, Iterable, Protocol, runtime_checkable
 
-from app.registry import catalog, decision_table
+from app.registry import FIXTURES_DIR, catalog, decision_table
 
 CHOICE = "choice"
 SCORE = "score"
 NOUL = "noul"
+
+UNCALIBRATED_CEILING = 0.84  # just under the HIGH edge: never act on an unpinned pairing
 
 
 def choice_question(instructions: str, criteria: Iterable[str]) -> dict[str, Any]:
@@ -50,6 +53,12 @@ def catalog_version() -> str:
     return catalog()["version"]
 
 
+def calibration() -> dict[str, Any]:
+    """Measured quality per (implementation, catalog version). Nothing else may claim it."""
+    with (FIXTURES_DIR / "decider_calibration.json").open() as fh:
+        return json.load(fh)
+
+
 def configured(brand_id: str) -> str:
     """Which implementation answers for this brand: env override, brand pin, then default."""
     config = decision_table().get("deciders", {}) or {}
@@ -61,8 +70,17 @@ def configured(brand_id: str) -> str:
 
 
 def get(name: str) -> TypedDecider:
+    """The named implementation, hosted when it is configured and local otherwise.
+
+    `jev_api` is one decider with two transports: the hosted model answers when a key is
+    present, the deterministic stand-in when there is none, so tests and CI stay offline
+    without a second name in the decision table.
+    """
+    from app import jev
     from app.mocks import decider as implementations
 
+    if name == jev.JevApi.name and jev.configured():
+        return jev.JevApi()
     return implementations.build(name)
 
 

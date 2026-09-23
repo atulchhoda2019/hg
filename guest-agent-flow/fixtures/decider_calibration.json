@@ -1,5 +1,6 @@
 {
   "_note": "Calibration is valid only for the choice-set version it was measured on (I8). A catalog edit invalidates every row here until the experiment harness is re-run.",
+  "_note_measured_version": "A row with measured_version applies to that model version alone: the hosted Jev pin below was measured on the offline stand-in, so a live model version is uncalibrated until scripts/decider_experiment.py has run against it.",
   "slm_incumbent": {
     "guest-intents-v3": {"measured_on": "2026-09-02", "ece": 0.061, "top1": 0.91, "top3": 0.98}
   },
@@ -7,6 +8,6 @@
     "guest-intents-v3": {"measured_on": "2026-09-05", "ece": 0.038, "top1": 0.93, "top3": 0.99}
   },
   "jev_api": {
-    "guest-intents-v3": {"measured_on": "2026-09-05", "ece": 0.029, "top1": 0.94, "top3": 0.99}
+    "guest-intents-v3": {"measured_on": "2026-09-05", "measured_version": "jev-2026-09", "ece": 0.029, "top1": 0.94, "top3": 0.99}
   }
 }

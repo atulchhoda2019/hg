@@ -130,9 +130,13 @@ def stage1_classifier(utterance: str, brand_id: str = "") -> Intent:
     })["intent"]
 
     probabilities: dict[str, float] = answer["probabilities"]
+    # Which model answered, not which was asked: a hosted decider that timed out hands the
+    # question to the incumbent, and the trace has to say so.
+    decided_by = answer.get("decider", model.name)
+    decided_version = answer.get("decider_version", model.version)
     if not answer["criterion"]:
         return Intent(name="__out_of_scope__", confidence=0.2, band="LOW", slots={},
-                      alternates=[], decider=model.name, decider_version=model.version,
+                      alternates=[], decider=decided_by, decider_version=decided_version,
                       calibrated=answer["calibrated"])
 
     ranked = sorted(probabilities.items(), key=lambda row: (-row[1], row[0]))
@@ -144,8 +148,8 @@ def stage1_classifier(utterance: str, brand_id: str = "") -> Intent:
         band=band_for(confidence),
         slots=extract_slots(name, utterance),
         alternates=[n for n, _ in ranked[1:3]],
-        decider=model.name,
-        decider_version=model.version,
+        decider=decided_by,
+        decider_version=decided_version,
         calibrated=answer["calibrated"],
     )
 

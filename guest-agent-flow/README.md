@@ -14,7 +14,7 @@ the turn may read. Nothing the model emits creates a route, a tool call, a price
 
 ```bash
 pip install -r requirements.txt
-python -m pytest -q                  # 55 tests
+python -m pytest -q                  # 69 tests
 python scripts/validate_config.py    # served-config build gate
 python scripts/decider_experiment.py # compare the deciders on the frozen golden set
 uvicorn app.main:app --port 8300
@@ -74,13 +74,14 @@ arithmetic in `app/mocks/calculator.py`; the model never computes money.
 Every question the runtime asks a model is one of three shapes — `choice` over a closed list,
 `score` over an ordinal scale, `noul` for a yes/no with a probability — so the model returns a
 typed answer with probabilities instead of prose that has to be parsed and trusted.
-`app/decider.py` is the port; `app/mocks/decider.py` registers the three implementations:
+`app/decider.py` is the port; `app/mocks/decider.py` registers the offline stand-ins and
+`app/jev.py` is the hosted transport:
 
 | Decider | What it is | Where the state goes |
 | --- | --- | --- |
 | `slm_incumbent` | the existing small classifier, the fallback | in process |
 | `dev_local` | a self-hosted `dev-0.4b` in the VPC | in process |
-| `jev_api` | the hosted typed model | redacted to references before egress |
+| `jev_api` | the hosted Jev decision API | redacted to references before egress |
 
 Swapping one for another is a config edit (`deciders:` on the decision table, or `DECIDER` for an
 experiment), never a graph change. Three calls use it: planner stage 1 (a `choice` over the
@@ -88,12 +89,94 @@ catalog), and two advisory `noul` screens — does this utterance ask for a stat
 the confirmed proposal match what was asked — recorded next to the deterministic decision rather
 than replacing it.
 
+### Where Jev is used, and why it is the right shape for these three questions
+
+| Call site | Question type | What the runtime does with the answer |
+| --- | --- | --- |
+| planner stage 1, `app/nodes/planner.py` | `choice` over the 9 catalog labels | the winning label picks the decision-table row; its probability picks the band (act / clarify / hand off) and the runner-up labels *are* the clarify options |
+| pre-corridor screen, `app/screens.py` | `noul` — "does this utterance ask for a state change?" | a high yes on a turn the table routed READ-only is recorded as a disagreement for review; it can stop a write, never start one |
+| pre-execute screen, `app/screens.py` | `noul` — "does the confirmed proposal match what was asked?" | a low yes on a nonce-confirmed proposal blocks the write before the SOR call |
+
+Stage 0 rules answer the unambiguous utterances for free, so Jev is only asked the ones that
+are actually ambiguous — "family suite near the park, under $300, with breakfast" costs
+$0.00015 and 358 input tokens; "how many points do I have" costs nothing at all.
+
+Why a typed decision API rather than a chat model for these:
+
+- **The output is a distribution, not a sentence.** A chat model's "I'm fairly confident this
+  is a booking request" has no number in it; Jev returns `{property_search: 0.83, stay_quote:
+  0.12, booking_create: 0.05}`. Bands, abstention and the clarify options are all read off
+  that vector, so the threshold that decides whether the assistant acts is a tunable number
+  rather than a prompt.
+- **The label set is closed by the request, not by instructions.** Criteria are sent as the
+  catalog's own labels, so there is no free-text answer to parse, no invented intent, no
+  "booking_create." with a period, and no schema-repair retry. A renamed catalog is a new
+  choice-set version and invalidates the calibration automatically.
+- **It is calibratable, and we hold it to that.** A pairing of model version and choice-set
+  version is uncalibrated until `scripts/decider_experiment.py` measures ECE against the
+  golden set; until then its probabilities are capped below the HIGH edge, so an unmeasured
+  model can ask a clarifying question but cannot cause an action. That gate is only
+  meaningful because the answer is a probability in the first place.
+- **Facts never leave.** A `choice` question carries labels; the guest's words go in `state`,
+  redacted. There is no prompt in which a rate, a points balance or a PII field has to be
+  restated for the model to choose well.
+- **Cost is the shape of the task.** All of a turn's typed questions go in one batched call —
+  a 9-way decision measured at 358 in / 90 out tokens and $0.00015 — against a chat completion
+  that has to write prose and then have it parsed back.
+
+What Jev is deliberately *not* used for: it never picks the graph, reads a fact, computes money
+or touches the corridor. It answers the three questions above and the tables do the rest — and
+if it is slow, refused or down, `slm_incumbent` answers the same question in process.
+
 The band comes off the calibrated probability and the clarifying options are the top three of the
 same vector, so what the ladder asks and what the model believed cannot drift apart. Calibration
 is pinned to a choice-set version (`fixtures/decider_calibration.json`): edit the catalog and
 every pairing is uncalibrated until the harness re-runs, capped below the HIGH edge so an
 uncalibrated model can ask but not act. The build gate refuses to serve a decider with no
 calibration for the served catalog, and criteria are labels only — facts live in the state.
+
+### Calling the hosted model
+
+`jev_api` is one decider with two transports. Set a key and the questions go to the hosted
+Jev API; with no key the deterministic stand-in answers, so tests and CI never touch the
+network.
+
+```bash
+export JEV_API_KEY=jv_live_...     # or TYPESAFE_API_KEY for console.typesafe.ai
+export JEV_BASE_URL=https://jevtypesafeai.com/api/v1/decide   # the default
+export JEV_MODEL=jev-1.13.0        # pinned: never jev-latest in a served config
+python scripts/jev_smoke.py        # one live question: endpoint, auth, answer shape
+DECIDER=jev_api uvicorn app.main:app --port 8400
+```
+
+Run the smoke first. `scripts/decider_experiment.py` will happily send the whole golden
+set to a keyed endpoint and spend real credit; the smoke sends one question. Jev is
+prepaid, so an account with no balance answers `HTTP 402 Insufficient credits` — the
+smoke prints the vendor's own words, and a turn falls back to the incumbent.
+
+A verified live answer looks like this:
+
+```
+POST https://jevtypesafeai.com/api/v1/decide  model=jev-1.13.0
+answered by jev-1.13.0  calibrated=False
+criterion   property_search
+top 3       {"property_search": 0.8, "stay_quote": 0.17, "booking_create": 0.03}
+usage       {"input_tokens": 358, "output_tokens": 90, "cost_usd": 0.000151}
+```
+
+Three properties hold on that path. The state is redacted before egress and the choice set
+goes as bare labels. A model version is uncalibrated until
+`scripts/decider_experiment.py` has measured it — `measured_version` in the calibration
+fixture names the one that was — so a fresh pin can clarify but cannot act. And a call that
+times out, 4xx's or exhausts its retries is answered by the incumbent instead, with the
+fallback and the model that actually decided recorded in the trace.
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `JEV_API_KEY` / `TYPESAFE_API_KEY` | unset | a key switches the transport on |
+| `JEV_BASE_URL` | the hosted endpoint | point at `api.typesafe.ai/v1/systemone` to go direct |
+| `JEV_MODEL` | `jev-1.13.0` | the pinned model version |
+| `JEV_TIMEOUT_S` | `10` | per attempt; 3 attempts on 429/502/503/529 |
 
 ## Governance
 
