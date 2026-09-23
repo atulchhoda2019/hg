@@ -17,6 +17,9 @@ from app.tracing import run_config  # noqa: E402
 FAULT_FLAGS = ["MODEL_UNCITED_CLAIM", "MODEL_TIMEOUT_ONCE", "CONTENT_EMPTY",
                "_CONTENT_EMPTY_CONSUMED", "SOR_TIMEOUT_ONCE", "RATE_CHANGE_ONCE"]
 
+# A key in the ambient environment would send the suite's questions to a vendor.
+OFFLINE = ["JEV_API_KEY", "TYPESAFE_API_KEY"]
+
 
 def _reset() -> None:
     crs.reset()
@@ -28,7 +31,7 @@ def _reset() -> None:
 @pytest.fixture(autouse=True)
 def clean_world(tmp_path, monkeypatch):
     monkeypatch.setenv("AUDIT_LOG", str(tmp_path / "audit.jsonl"))
-    for flag in FAULT_FLAGS:
+    for flag in [*FAULT_FLAGS, *OFFLINE]:
         monkeypatch.delenv(flag, raising=False)
     _reset()
     yield

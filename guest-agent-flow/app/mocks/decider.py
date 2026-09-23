@@ -11,18 +11,17 @@ uncalibrated answer is capped below the HIGH band: the ladder asks instead of ac
 """
 import json
 import re
-from typing import Any
 
 from app.audit import redact
-from app.decider import CHOICE, NOUL, SCORE, catalog_version
-from app.registry import FIXTURES_DIR, catalog
-
-UNCALIBRATED_CEILING = 0.84  # just under the HIGH edge: never act on an unpinned pairing
-
-
-def calibration() -> dict[str, Any]:
-    with (FIXTURES_DIR / "decider_calibration.json").open() as fh:
-        return json.load(fh)
+from app.decider import (
+    CHOICE,
+    NOUL,
+    SCORE,
+    UNCALIBRATED_CEILING,
+    calibration,
+    catalog_version,
+)
+from app.registry import catalog
 
 
 def _keywords(criterion: str) -> list[str]:
@@ -143,7 +142,10 @@ class DevLocal(_Decider):
 
 
 class JevApi(_Decider):
-    """Hosted typed decider. The state is redacted to refs before it crosses the boundary."""
+    """Offline stand-in for the hosted decider (`app.jev` answers once a key is set).
+
+    The state is redacted to refs before it crosses the boundary, here as there.
+    """
 
     name = "jev_api"
     version = "jev-2026-09"

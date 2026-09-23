@@ -14,7 +14,7 @@ the turn may read. Nothing the model emits creates a route, a tool call, a price
 
 ```bash
 pip install -r requirements.txt
-python -m pytest -q                  # 55 tests
+python -m pytest -q                  # 66 tests
 python scripts/validate_config.py    # served-config build gate
 python scripts/decider_experiment.py # compare the deciders on the frozen golden set
 uvicorn app.main:app --port 8300
@@ -74,13 +74,14 @@ arithmetic in `app/mocks/calculator.py`; the model never computes money.
 Every question the runtime asks a model is one of three shapes — `choice` over a closed list,
 `score` over an ordinal scale, `noul` for a yes/no with a probability — so the model returns a
 typed answer with probabilities instead of prose that has to be parsed and trusted.
-`app/decider.py` is the port; `app/mocks/decider.py` registers the three implementations:
+`app/decider.py` is the port; `app/mocks/decider.py` registers the offline stand-ins and
+`app/jev.py` is the hosted transport:
 
 | Decider | What it is | Where the state goes |
 | --- | --- | --- |
 | `slm_incumbent` | the existing small classifier, the fallback | in process |
 | `dev_local` | a self-hosted `dev-0.4b` in the VPC | in process |
-| `jev_api` | the hosted typed model | redacted to references before egress |
+| `jev_api` | the hosted Jev decision API | redacted to references before egress |
 
 Swapping one for another is a config edit (`deciders:` on the decision table, or `DECIDER` for an
 experiment), never a graph change. Three calls use it: planner stage 1 (a `choice` over the
@@ -94,6 +95,37 @@ is pinned to a choice-set version (`fixtures/decider_calibration.json`): edit th
 every pairing is uncalibrated until the harness re-runs, capped below the HIGH edge so an
 uncalibrated model can ask but not act. The build gate refuses to serve a decider with no
 calibration for the served catalog, and criteria are labels only — facts live in the state.
+
+### Calling the hosted model
+
+`jev_api` is one decider with two transports. Set a key and the questions go to the hosted
+Jev API; with no key the deterministic stand-in answers, so tests and CI never touch the
+network.
+
+```bash
+export JEV_API_KEY=jv_live_...     # or TYPESAFE_API_KEY for console.typesafe.ai
+export JEV_BASE_URL=https://jevtypesafeai.com/api/v1/decide   # the default
+export JEV_MODEL=jev-1.13.0        # pinned: never jev-latest in a served config
+python scripts/jev_smoke.py        # one live question: endpoint, auth, answer shape
+DECIDER=jev_api uvicorn app.main:app --port 8400
+```
+
+Run the smoke first. `scripts/decider_experiment.py` will happily send the whole golden
+set to a keyed endpoint and spend real credit; the smoke sends one question.
+
+Three properties hold on that path. The state is redacted before egress and the choice set
+goes as bare labels. A model version is uncalibrated until
+`scripts/decider_experiment.py` has measured it — `measured_version` in the calibration
+fixture names the one that was — so a fresh pin can clarify but cannot act. And a call that
+times out, 4xx's or exhausts its retries is answered by the incumbent instead, with the
+fallback and the model that actually decided recorded in the trace.
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `JEV_API_KEY` / `TYPESAFE_API_KEY` | unset | a key switches the transport on |
+| `JEV_BASE_URL` | the hosted endpoint | point at `api.typesafe.ai/v1/systemone` to go direct |
+| `JEV_MODEL` | `jev-1.13.0` | the pinned model version |
+| `JEV_TIMEOUT_S` | `10` | per attempt; 3 attempts on 429/502/503/529 |
 
 ## Governance
 

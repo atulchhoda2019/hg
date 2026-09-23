@@ -16,6 +16,7 @@ import time
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
 
 from app import decider as decider_port  # noqa: E402
+from app import jev  # noqa: E402
 from app.mocks import decider as implementations  # noqa: E402
 from app.nodes.planner import choice_set  # noqa: E402
 
@@ -47,8 +48,16 @@ def expected_calibration_error(pairs: list[tuple[float, bool]]) -> float:
     return round(error, 4)
 
 
+def measured_cost_per_1k(spent: dict) -> float | None:
+    """A hosted call reports what it cost; list price is only used when nothing did."""
+    if not spent["calls"]:
+        return None
+    return round(1000 * spent["usd"] / spent["calls"], 4)
+
+
 def evaluate(name: str, rows: list[dict]) -> dict:
     model = decider_port.get(name)
+    spent = {"calls": 0, "usd": 0.0}
     question = {"intent": decider_port.choice_question(
         "Which guest journey is this utterance asking for?", choice_set())}
     top1 = top3 = 0
@@ -60,6 +69,10 @@ def evaluate(name: str, rows: list[dict]) -> dict:
         started = time.perf_counter()
         answer = model.answer(row["utterance"], question)["intent"]
         latencies.append((time.perf_counter() - started) * 1000)
+        call = getattr(model, "last_usage", None) or {}
+        if call.get("cost_usd"):
+            spent["calls"] += 1
+            spent["usd"] += call["cost_usd"]
         ranked = [n for n, _ in sorted(answer["probabilities"].items(),
                                        key=lambda item: (-item[1], item[0]))]
         picked = answer["criterion"] or OUT_OF_SCOPE
@@ -77,6 +90,7 @@ def evaluate(name: str, rows: list[dict]) -> dict:
     return {
         "decider": name,
         "decider_version": model.version,
+        "transport": "hosted" if isinstance(model, jev.JevApi) else "local",
         "catalog_version": decider_port.catalog_version(),
         "calibrated": bool(getattr(model, "_calibrated")()),
         "top1": round(top1 / total, 4),
@@ -86,7 +100,7 @@ def evaluate(name: str, rows: list[dict]) -> dict:
         "abstentions_wrong": abstained_wrong,
         "p50_ms": round(latencies[len(latencies) // 2], 3),
         "p95_ms": round(latencies[min(len(latencies) - 1, int(len(latencies) * 0.95))], 3),
-        "cost_per_1k": COST_PER_1K.get(name, 0.0),
+        "cost_per_1k": measured_cost_per_1k(spent) or COST_PER_1K.get(name, 0.0),
     }
 
 
@@ -102,12 +116,13 @@ def main() -> int:
         return 0
 
     print(f"golden set: {len(rows)} utterances, catalog {decider_port.catalog_version()}\n")
-    header = f"{'decider':<16}{'ver':<14}{'top1':>7}{'top3':>7}{'ece':>8}{'abst+/-':>10}" \
-             f"{'p50ms':>8}{'p95ms':>8}{'$/1k':>8}  calibrated"
+    header = f"{'decider':<16}{'ver':<14}{'via':<9}{'top1':>7}{'top3':>7}{'ece':>8}" \
+             f"{'abst+/-':>10}{'p50ms':>8}{'p95ms':>8}{'$/1k':>8}  calibrated"
     print(header)
     print("-" * len(header))
     for row in results:
-        print(f"{row['decider']:<16}{row['decider_version']:<14}{row['top1']:>7.2f}"
+        print(f"{row['decider']:<16}{row['decider_version']:<14}{row['transport']:<9}"
+              f"{row['top1']:>7.2f}"
               f"{row['top3']:>7.2f}{row['ece']:>8.3f}"
               f"{str(row['abstentions_correct']) + '/' + str(row['abstentions_wrong']):>10}"
               f"{row['p50_ms']:>8.2f}{row['p95_ms']:>8.2f}{row['cost_per_1k']:>8.2f}"
