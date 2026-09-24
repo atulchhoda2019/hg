@@ -156,8 +156,36 @@ def render(docs: dict[str, dict]) -> None:
                     draw.text((x + 8, y + 70), f"<-> {r['connecting_with'][0]}", fill=0)
             draw.text((16, 272), "ELEVATOR CORE: LEFT", fill=0)
             if fax:
-                img = img.point(lambda v: min(255, int(v * 0.92 + 18)))
+                img = _faxify(img)
             img.save(OUT / page["render"])
+
+
+def _faxify(img):
+    """Make a FAX page look like one: low contrast, speckle, skew, 1-bit dither, scan edge.
+
+    The classifier is a model looking at pixels, so the quality band has to be visible in
+    the pixels rather than asserted in the JSON beside them.
+    """
+    import random
+
+    from PIL import Image, ImageDraw, ImageFilter
+
+    rng = random.Random(7)
+    img = img.filter(ImageFilter.GaussianBlur(0.7))  # soft, out-of-focus strokes
+    img = img.point(lambda v: 255 if v > 205 else int(70 + v * 0.45))  # grey, broken blacks
+    px = img.load()
+    w, h = img.size
+    for _ in range(w * h // 260):  # toner speckle
+        x, y = rng.randrange(w), rng.randrange(h)
+        px[x, y] = rng.choice((0, 0, 255))
+    draw = ImageDraw.Draw(img)
+    for y in range(rng.randrange(20, 40), h, rng.randrange(37, 53)):  # dropped scan lines
+        draw.line([(0, y), (w, y)], fill=rng.randrange(120, 190), width=1)
+    img = img.rotate(-1.1, resample=Image.BILINEAR, fillcolor=255, expand=False)
+    img = img.convert("1").convert("L")  # 1-bit dither, the actual fax indignity
+    edge = ImageDraw.Draw(img)
+    edge.rectangle([0, 0, 9, h], fill=0)  # the black band a scanner leaves
+    return img
 
 
 def main() -> None:

@@ -37,7 +37,7 @@ def isolated_state(tmp_path, monkeypatch):
 def tool_context() -> FakeToolContext:
     return FakeToolContext(
         {
-            "temp:slots": {
+            "slots": {
                 "property_id": "H-201",
                 "check_in": "2026-06-12",
                 "check_out": "2026-06-14",

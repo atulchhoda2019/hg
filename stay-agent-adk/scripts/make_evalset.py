@@ -53,7 +53,7 @@ def case(
 
 
 SLOTS_H201 = {
-    "temp:slots": {
+    "slots": {
         "property_id": "H-201",
         "check_in": "2026-06-12",
         "check_out": "2026-06-14",

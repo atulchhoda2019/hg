@@ -19,11 +19,13 @@ def _flag(name: str, default: str = "") -> str:
 
 
 def gemini_model() -> str:
-    return _flag("STAY_GEMINI_MODEL", "gemini-2.5-flash")
+    # An alias rather than a pinned id: new Developer API keys are refused by older
+    # explicit versions with "no longer available to new users".
+    return _flag("STAY_GEMINI_MODEL", "gemini-flash-latest")
 
 
 def gemma_model() -> str:
-    return _flag("STAY_GEMMA_MODEL", "gemma-3-27b-it")
+    return _flag("STAY_GEMMA_MODEL", "gemma-4-31b-it")
 
 
 def decider_mode() -> str:

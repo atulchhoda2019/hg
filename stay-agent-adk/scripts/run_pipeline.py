@@ -11,9 +11,11 @@ import sys
 
 from stay_agent.mocks import attribute_store
 from stay_agent.room_truth import pipeline
+from stay_agent.tracing import setup_tracing
 
 
 async def main(doc_ids: list[str]) -> None:
+    setup_tracing()
     for doc_id in doc_ids:
         result = await pipeline.run_job(doc_id)
         print(

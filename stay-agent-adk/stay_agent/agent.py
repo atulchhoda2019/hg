@@ -31,6 +31,7 @@ from .concierge.tools import (
     search_rooms,
 )
 from .registry import actions, attribute_schema, is_registered
+from .tracing import setup_tracing
 
 CONCIERGE_TOOLS = (search_rooms, get_live_quote, explain_room, propose_action, confirm_action)
 
@@ -76,4 +77,5 @@ def _load_dotenv() -> None:
 
 
 _load_dotenv()
+setup_tracing()  # after the .env: STAY_TRACE and GOOGLE_CLOUD_PROJECT may live there
 root_agent = build_root_agent()

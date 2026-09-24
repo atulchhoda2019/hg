@@ -21,16 +21,19 @@ from pydantic import ValidationError
 
 from ..contracts import ActionProposal, Quote, Receipt
 from ..mocks import content_index, faults, inventory, rate_engine, reservations
+from ..tracing import span
 
 NONCE_TTL = timedelta(minutes=5)
 DEFAULT_GUEST = "G-2001"
 
-SLOTS_KEY = "temp:slots"
-QUOTES_KEY = "temp:quotes"
-PENDING_KEY = "temp:pending_action"
+# Session state, not ADK `temp:` state: a booking corridor spans turns (quote, preview,
+# confirm), and temp keys are dropped at the end of the invocation that wrote them.
+SLOTS_KEY = "slots"
+QUOTES_KEY = "quotes"
+PENDING_KEY = "pending_action"
 GUEST_KEY = "user:guest_id"
 VERSION_KEY = "app:attribute_version"
-AUDIT_KEY = "temp:audit"
+AUDIT_KEY = "audit"
 
 
 def slots(state: MutableMapping[str, Any]) -> dict[str, Any]:
@@ -136,6 +139,28 @@ def propose(
     quote_id: str | None = None,
     reservation_id: str | None = None,
 ) -> dict[str, Any]:
+    with span(
+        "corridor.propose", kind=kind, room_id=room_id, quote_id=quote_id
+    ) as current:
+        result = _propose(
+            state,
+            kind=kind,
+            room_id=room_id,
+            quote_id=quote_id,
+            reservation_id=reservation_id,
+        )
+        current.set_attribute("status", result["status"])
+        return result
+
+
+def _propose(
+    state: MutableMapping[str, Any],
+    *,
+    kind: str,
+    room_id: str | None = None,
+    quote_id: str | None = None,
+    reservation_id: str | None = None,
+) -> dict[str, Any]:
     check_in, check_out = stay_dates(state)
     quote: Quote | None = None
 
@@ -187,6 +212,17 @@ def propose(
 
 
 def confirm(state: MutableMapping[str, Any], *, nonce: str) -> dict[str, Any]:
+    with span("corridor.confirm") as current:
+        result = _confirm(state, nonce=nonce)
+        current.set_attribute("status", result["status"])
+        receipt = result.get("receipt")
+        if isinstance(receipt, dict):
+            current.set_attribute("receipt.verified", bool(receipt.get("verified")))
+            current.set_attribute("reservation_id", str(receipt.get("reservation_id")))
+        return result
+
+
+def _confirm(state: MutableMapping[str, Any], *, nonce: str) -> dict[str, Any]:
     pending = state.get(PENDING_KEY)
     if not pending:
         return {"status": "NO_PENDING_ACTION", "detail": "nothing was proposed"}
