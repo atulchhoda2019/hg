@@ -1,0 +1,12 @@
+{"id": "D1", "decision_type": "ambiguity_band", "state": {"utterance": "two nights next Friday at H-201, high floor, park view, away from the elevator", "slots": {"property_id": "H-201", "check_in": "2026-06-12", "check_out": "2026-06-14", "min_floor": 5, "view": "park"}}, "expected": "HIGH"}
+{"id": "D2", "decision_type": "ambiguity_band", "state": {"utterance": "somewhere quiet next month", "slots": {}}, "expected": "LOW"}
+{"id": "D3", "decision_type": "ambiguity_band", "state": {"utterance": "a room at H-202 for two", "slots": {"property_id": "H-202", "guests": 2}}, "expected": "MEDIUM"}
+{"id": "D4", "decision_type": "ambiguity_band", "state": {"utterance": "park view room at H-201 on the 6th floor, 12th to 14th June", "slots": {"property_id": "H-201", "check_in": "2026-06-12", "check_out": "2026-06-14", "view": "park", "min_floor": 6}}, "expected": "HIGH"}
+{"id": "D5", "decision_type": "amenity_intent_route", "state": {"utterance": "how much is room 604 for those nights?"}, "expected": "QUOTE"}
+{"id": "D6", "decision_type": "amenity_intent_route", "state": {"utterance": "book it"}, "expected": "BOOK"}
+{"id": "D7", "decision_type": "amenity_intent_route", "state": {"utterance": "can I get a connecting room instead?"}, "expected": "UPSELL"}
+{"id": "D8", "decision_type": "amenity_intent_route", "state": {"utterance": "cancel my reservation please"}, "expected": "CANCEL"}
+{"id": "D9", "decision_type": "amenity_intent_route", "state": {"utterance": "why do you say 512 is park view?"}, "expected": "EXPLAIN"}
+{"id": "D10", "decision_type": "amenity_intent_route", "state": {"utterance": "I need a quiet room on a high floor"}, "expected": "SEARCH"}
+{"id": "D11", "decision_type": "upsell_eligibility", "state": {"utterance": "connecting room?", "reservation": {"status": "CONFIRMED"}}, "expected": "ELIGIBLE"}
+{"id": "D12", "decision_type": "upsell_eligibility", "state": {"utterance": "connecting room?", "reservation": {}}, "expected": "NOT_ELIGIBLE"}

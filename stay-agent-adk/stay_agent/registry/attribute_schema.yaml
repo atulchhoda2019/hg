@@ -1,0 +1,15 @@
+version: stay-attributes-v1
+# Room attributes are the middle data temperature (I5): semi-static, versioned, provenance
+# on every field. The forbidden prefixes are asserted at load time, so nobody can quietly
+# add `rate_plan` or `avail_window` here and turn a versioned store into a stale price cache.
+forbidden_field_prefixes: [price, rate, avail, occupanc]
+
+fields:
+  room_id: {type: str, required: true}
+  floor: {type: int, required: true}
+  view: {type: enum, values: [park, street, courtyard], required: false}
+  connecting_with: {type: "list[str]", required: false, symmetric: true}
+  distance_to_elevator_m: {type: float, required: false, min: 0, max: 200}
+  corner: {type: bool, required: false}
+  accessible: {type: bool, required: false}
+  area_sqm: {type: float, required: false, min: 8, max: 400}

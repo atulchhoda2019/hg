@@ -1,0 +1,49 @@
+version: stay-validation-v1
+# Validation is data, not code paths. Every rule below is evaluated by validate_agent with
+# no model in the loop; `waivable: false` rules cannot be resolved away in the review UI,
+# they can only be fixed (I7).
+rules:
+  room_id_reconciliation:
+    severity: ESCALATE
+    waivable: false
+    detail: Extracted room ids must equal the inventory's room ids for that property and floor.
+
+  connecting_symmetry:
+    severity: ESCALATE
+    waivable: true
+    detail: If 204 connects with 206 then 206 must connect with 204.
+
+  floor_prefix_consistency:
+    severity: ESCALATE
+    waivable: true
+    detail: Room id numbering must agree with the floor it was extracted from (314 -> floor 3).
+
+  area_sanity:
+    severity: ESCALATE
+    waivable: true
+    detail: area_sqm must sit inside the attribute schema bounds.
+
+  distance_sanity:
+    severity: ESCALATE
+    waivable: true
+    detail: distance_to_elevator_m must sit inside the attribute schema bounds.
+
+  cross_version_drift:
+    severity: ESCALATE
+    waivable: true
+    threshold: 0.20
+    detail: >
+      More than 20% of rooms changed against the previous committed version without a
+      declared renovation. A declared renovation on the job downgrades this to a WARN.
+
+  low_confidence_field:
+    severity: WARN
+    threshold: 0.70
+    detail: Per-field confidence under the threshold is recorded but does not escalate on its own.
+
+# Quality bands that force ESCALATE whatever the confidences say. A 1987 fax is not a
+# document the pipeline gets to be sure about.
+force_escalate_quality_bands: [FAX]
+
+# Confidence floor for AUTO_COMMIT. Below it the job goes to a human; it is never rejected.
+auto_commit_min_confidence: 0.82
