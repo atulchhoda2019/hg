@@ -10,11 +10,18 @@ on a corridor or gate step, not lines in a file.
     off      - no tracing (default, and what the offline tests run under)
     console  - spans to stdout, for local work
     cloud    - Google Cloud Trace in `GOOGLE_CLOUD_PROJECT`
+
+Under a managed runtime (Agent Runtime, Cloud Run with telemetry collection) this exporter
+is the one that carries ADK's spans as well: the first provider set wins, and on Agent
+Runtime nothing has set one by the time `stay_agent` imports. That makes pointing it at the
+right project load-bearing for every span, not just ours.
 """
 
 from __future__ import annotations
 
+import logging
 import os
+import re
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from typing import Any
@@ -26,11 +33,50 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExport
 
 SERVICE_NAME = "stay-agent-adk"
 
+# Deliberately not `\d+`: Cloud Trace rejects a project *number* in the span name with
+# "Invalid project id in name!", and managed runtimes are happy to export the number.
+_PROJECT_ID = re.compile(r"[a-z][a-z0-9-]{4,28}[a-z0-9]")
+
+_PROJECT_ENV_VARS = ("GOOGLE_CLOUD_PROJECT", "GOOGLE_CLOUD_QUOTA_PROJECT", "GCLOUD_PROJECT")
+
+_log = logging.getLogger(__name__)
+
 _configured = False
 
 
 def mode() -> str:
     return os.environ.get("STAY_TRACE", "off").strip().lower()
+
+
+def _cloud_project() -> str:
+    """The project to write spans to.
+
+    `GOOGLE_CLOUD_PROJECT` is the documented knob but is not always a project id: Agent
+    Runtime sets it to the project *number*, and Cloud Trace answers a numeric span name
+    with "Invalid project id in name!". Anything that is not an id falls through to the
+    project on the ambient credentials, which on Google infrastructure is the id.
+    """
+    candidate = os.environ.get("GOOGLE_CLOUD_PROJECT", "").strip()
+    if _PROJECT_ID.fullmatch(candidate):
+        return candidate
+
+    import google.auth
+
+    # The same env vars are what `google.auth.default` prefers, so they have to be out of
+    # the way for it to reach the credentials and the metadata server underneath them.
+    shadowed = {name: os.environ.pop(name, None) for name in _PROJECT_ENV_VARS}
+    try:
+        _, ambient = google.auth.default()
+    finally:
+        os.environ.update({name: value for name, value in shadowed.items() if value is not None})
+
+    ambient = str(ambient or "").strip()
+    if not _PROJECT_ID.fullmatch(ambient):
+        raise RuntimeError(
+            f"STAY_TRACE=cloud found no project id to write spans to "
+            f"(GOOGLE_CLOUD_PROJECT={candidate!r}, credentials={ambient!r})"
+        )
+    return ambient
 
 
 def setup_tracing(service_name: str = SERVICE_NAME) -> bool:
@@ -51,10 +97,10 @@ def setup_tracing(service_name: str = SERVICE_NAME) -> bool:
         # Imported lazily: the offline install has no reason to carry the GCP exporter.
         from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
 
-        project = os.environ.get("GOOGLE_CLOUD_PROJECT", "").strip()
-        if not project:
-            raise RuntimeError("STAY_TRACE=cloud needs GOOGLE_CLOUD_PROJECT")
-        provider.add_span_processor(BatchSpanProcessor(CloudTraceSpanExporter(project_id=project)))
+        project = _cloud_project()
+        _log.info("stay-agent tracing: exporting to Cloud Trace in %s", project)
+        exporter = CloudTraceSpanExporter(project_id=project)
+        provider.add_span_processor(BatchSpanProcessor(exporter))
     elif chosen == "console":
         provider.add_span_processor(SimpleSpanProcessor(ConsoleSpanExporter()))
     else:
