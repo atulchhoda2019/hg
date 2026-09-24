@@ -83,6 +83,29 @@ def test_an_unknown_exporter_fails_loudly(monkeypatch):
         tracing.setup_tracing()
 
 
+def test_cloud_mode_defers_to_a_runtime_that_already_installed_a_provider(monkeypatch, spans):
+    # Agent Runtime exports spans itself; a second exporter cannot replace the provider,
+    # it can only win the race at import time and take ADK's spans with it.
+    monkeypatch.setattr(tracing, "_configured", False)
+    monkeypatch.setenv("STAY_TRACE", "cloud")
+
+    def refuse(*_args, **_kwargs):
+        raise AssertionError("installed a second exporter under a managed runtime")
+
+    monkeypatch.setattr(tracing, "_cloud_project", refuse)
+
+    assert tracing.setup_tracing() is True
+
+
+@pytest.mark.parametrize("unusable", ["projects/ihgapp", "136933198325", ""])
+def test_an_unusable_project_env_falls_back_to_the_ambient_credentials(monkeypatch, unusable):
+    # Agent Runtime exports the project number, which Cloud Trace rejects outright.
+    monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", unusable)
+    monkeypatch.setattr("google.auth.default", lambda *a, **k: (object(), "ihgapp"))
+
+    assert tracing._cloud_project() == "ihgapp"
+
+
 def test_search_and_corridor_steps_are_spans_with_the_attributes_an_auditor_wants(
     tool_context, spans
 ):
