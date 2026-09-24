@@ -3,3 +3,4 @@ __pycache__/
 .pytest_cache/
 guest-agent-flow/var/
 *.sqlite
+.venv-adk/

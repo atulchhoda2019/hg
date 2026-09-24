@@ -1,0 +1,49 @@
+version: stay-actions-v1
+# The bounded action registry (I3). A tool that is not a row here cannot run, whatever the
+# model asks for and whatever the agent was constructed with. `before_tool_callback`
+# reads this file, so adding a capability is a config review, not a code review.
+#
+# args: name -> {type, required}. The gate rejects unknown args and wrong types before the
+# tool body sees them, so a tool never has to defend itself against the model.
+tools:
+  slot_extractor:
+    purpose: Turn the guest's sentence into typed SearchSlots. No tools of its own.
+    writes: false
+    args:
+      request: {type: str, required: true}
+
+  search_rooms:
+    purpose: Hard-predicate filter over committed room attributes at the pinned version.
+    writes: false
+    returns_money: false
+    args:
+      limit: {type: int, required: false}
+
+  get_live_quote:
+    purpose: The only path by which money enters the conversation.
+    writes: false
+    returns_money: true
+    args:
+      room_id: {type: str, required: true}
+
+  explain_room:
+    purpose: Attribute provenance for one room, so the agent can say why it believes it.
+    writes: false
+    args:
+      room_id: {type: str, required: true}
+
+  propose_action:
+    purpose: Revalidate, render the preview in code, mint a nonce. Writes nothing external.
+    writes: false
+    args:
+      kind: {type: str, required: true, enum: [BOOK, ATTRIBUTE_UPSELL, CANCEL]}
+      room_id: {type: str, required: false}
+      quote_id: {type: str, required: false}
+      reservation_id: {type: str, required: false}
+
+  confirm_action:
+    purpose: The real gate (I4). Nonce, expiry, live revalidation, idempotent execute.
+    writes: true
+    requires_pending_action: true
+    args:
+      nonce: {type: str, required: true}

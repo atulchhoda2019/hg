@@ -1,0 +1,1134 @@
+{
+  "attribute_version": "av-0",
+  "committed_at": "2026-01-05T00:00:00+00:00",
+  "rooms": [
+    {
+      "room_id": "201",
+      "property_id": "H-201",
+      "floor": 2,
+      "view": "park",
+      "connecting_with": [],
+      "distance_to_elevator_m": 6.0,
+      "corner": true,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "202",
+      "property_id": "H-201",
+      "floor": 2,
+      "view": "park",
+      "connecting_with": [
+        "203"
+      ],
+      "distance_to_elevator_m": 10.5,
+      "corner": false,
+      "accessible": true,
+      "area_sqm": 34.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "203",
+      "property_id": "H-201",
+      "floor": 2,
+      "view": "street",
+      "connecting_with": [
+        "202"
+      ],
+      "distance_to_elevator_m": 15.0,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 40.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "204",
+      "property_id": "H-201",
+      "floor": 2,
+      "view": "street",
+      "connecting_with": [],
+      "distance_to_elevator_m": 19.5,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "205",
+      "property_id": "H-201",
+      "floor": 2,
+      "view": "courtyard",
+      "connecting_with": [],
+      "distance_to_elevator_m": 24.0,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 34.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "206",
+      "property_id": "H-201",
+      "floor": 2,
+      "view": "courtyard",
+      "connecting_with": [
+        "207"
+      ],
+      "distance_to_elevator_m": 28.5,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 40.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "207",
+      "property_id": "H-201",
+      "floor": 2,
+      "view": "park",
+      "connecting_with": [
+        "206"
+      ],
+      "distance_to_elevator_m": 33.0,
+      "corner": true,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "301",
+      "property_id": "H-201",
+      "floor": 3,
+      "view": "park",
+      "connecting_with": [],
+      "distance_to_elevator_m": 6.0,
+      "corner": true,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "302",
+      "property_id": "H-201",
+      "floor": 3,
+      "view": "park",
+      "connecting_with": [
+        "303"
+      ],
+      "distance_to_elevator_m": 10.5,
+      "corner": false,
+      "accessible": true,
+      "area_sqm": 34.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "303",
+      "property_id": "H-201",
+      "floor": 3,
+      "view": "street",
+      "connecting_with": [
+        "302"
+      ],
+      "distance_to_elevator_m": 15.0,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 40.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "304",
+      "property_id": "H-201",
+      "floor": 3,
+      "view": "street",
+      "connecting_with": [],
+      "distance_to_elevator_m": 19.5,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "305",
+      "property_id": "H-201",
+      "floor": 3,
+      "view": "courtyard",
+      "connecting_with": [],
+      "distance_to_elevator_m": 24.0,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 34.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "306",
+      "property_id": "H-201",
+      "floor": 3,
+      "view": "courtyard",
+      "connecting_with": [
+        "307"
+      ],
+      "distance_to_elevator_m": 28.5,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 40.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "307",
+      "property_id": "H-201",
+      "floor": 3,
+      "view": "park",
+      "connecting_with": [
+        "306"
+      ],
+      "distance_to_elevator_m": 33.0,
+      "corner": true,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "401",
+      "property_id": "H-201",
+      "floor": 4,
+      "view": "park",
+      "connecting_with": [],
+      "distance_to_elevator_m": 6.0,
+      "corner": true,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "402",
+      "property_id": "H-201",
+      "floor": 4,
+      "view": "park",
+      "connecting_with": [
+        "403"
+      ],
+      "distance_to_elevator_m": 10.5,
+      "corner": false,
+      "accessible": true,
+      "area_sqm": 34.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "403",
+      "property_id": "H-201",
+      "floor": 4,
+      "view": "street",
+      "connecting_with": [
+        "402"
+      ],
+      "distance_to_elevator_m": 15.0,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 40.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "404",
+      "property_id": "H-201",
+      "floor": 4,
+      "view": "street",
+      "connecting_with": [],
+      "distance_to_elevator_m": 19.5,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "405",
+      "property_id": "H-201",
+      "floor": 4,
+      "view": "courtyard",
+      "connecting_with": [],
+      "distance_to_elevator_m": 24.0,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 34.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "406",
+      "property_id": "H-201",
+      "floor": 4,
+      "view": "courtyard",
+      "connecting_with": [
+        "407"
+      ],
+      "distance_to_elevator_m": 28.5,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 40.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "407",
+      "property_id": "H-201",
+      "floor": 4,
+      "view": "park",
+      "connecting_with": [
+        "406"
+      ],
+      "distance_to_elevator_m": 33.0,
+      "corner": true,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "501",
+      "property_id": "H-201",
+      "floor": 5,
+      "view": "park",
+      "connecting_with": [],
+      "distance_to_elevator_m": 6.0,
+      "corner": true,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "502",
+      "property_id": "H-201",
+      "floor": 5,
+      "view": "park",
+      "connecting_with": [
+        "503"
+      ],
+      "distance_to_elevator_m": 10.5,
+      "corner": false,
+      "accessible": true,
+      "area_sqm": 34.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "503",
+      "property_id": "H-201",
+      "floor": 5,
+      "view": "street",
+      "connecting_with": [
+        "502"
+      ],
+      "distance_to_elevator_m": 15.0,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 40.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "504",
+      "property_id": "H-201",
+      "floor": 5,
+      "view": "street",
+      "connecting_with": [],
+      "distance_to_elevator_m": 19.5,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "505",
+      "property_id": "H-201",
+      "floor": 5,
+      "view": "courtyard",
+      "connecting_with": [],
+      "distance_to_elevator_m": 24.0,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 34.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "506",
+      "property_id": "H-201",
+      "floor": 5,
+      "view": "courtyard",
+      "connecting_with": [
+        "507"
+      ],
+      "distance_to_elevator_m": 28.5,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 40.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "507",
+      "property_id": "H-201",
+      "floor": 5,
+      "view": "park",
+      "connecting_with": [
+        "506"
+      ],
+      "distance_to_elevator_m": 33.0,
+      "corner": true,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "601",
+      "property_id": "H-201",
+      "floor": 6,
+      "view": "park",
+      "connecting_with": [],
+      "distance_to_elevator_m": 6.0,
+      "corner": true,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "602",
+      "property_id": "H-201",
+      "floor": 6,
+      "view": "park",
+      "connecting_with": [
+        "603"
+      ],
+      "distance_to_elevator_m": 10.5,
+      "corner": false,
+      "accessible": true,
+      "area_sqm": 34.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "603",
+      "property_id": "H-201",
+      "floor": 6,
+      "view": "street",
+      "connecting_with": [
+        "602"
+      ],
+      "distance_to_elevator_m": 15.0,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 40.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "604",
+      "property_id": "H-201",
+      "floor": 6,
+      "view": "street",
+      "connecting_with": [],
+      "distance_to_elevator_m": 19.5,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "605",
+      "property_id": "H-201",
+      "floor": 6,
+      "view": "courtyard",
+      "connecting_with": [],
+      "distance_to_elevator_m": 24.0,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 34.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "606",
+      "property_id": "H-201",
+      "floor": 6,
+      "view": "courtyard",
+      "connecting_with": [
+        "607"
+      ],
+      "distance_to_elevator_m": 28.5,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 40.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "607",
+      "property_id": "H-201",
+      "floor": 6,
+      "view": "park",
+      "connecting_with": [
+        "606"
+      ],
+      "distance_to_elevator_m": 33.0,
+      "corner": true,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "701",
+      "property_id": "H-201",
+      "floor": 7,
+      "view": "park",
+      "connecting_with": [],
+      "distance_to_elevator_m": 6.0,
+      "corner": true,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "702",
+      "property_id": "H-201",
+      "floor": 7,
+      "view": "park",
+      "connecting_with": [
+        "703"
+      ],
+      "distance_to_elevator_m": 10.5,
+      "corner": false,
+      "accessible": true,
+      "area_sqm": 34.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "703",
+      "property_id": "H-201",
+      "floor": 7,
+      "view": "street",
+      "connecting_with": [
+        "702"
+      ],
+      "distance_to_elevator_m": 15.0,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 40.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "704",
+      "property_id": "H-201",
+      "floor": 7,
+      "view": "street",
+      "connecting_with": [],
+      "distance_to_elevator_m": 19.5,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "705",
+      "property_id": "H-201",
+      "floor": 7,
+      "view": "courtyard",
+      "connecting_with": [],
+      "distance_to_elevator_m": 24.0,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 34.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "706",
+      "property_id": "H-201",
+      "floor": 7,
+      "view": "courtyard",
+      "connecting_with": [
+        "707"
+      ],
+      "distance_to_elevator_m": 28.5,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 40.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "707",
+      "property_id": "H-201",
+      "floor": 7,
+      "view": "park",
+      "connecting_with": [
+        "706"
+      ],
+      "distance_to_elevator_m": 33.0,
+      "corner": true,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "101",
+      "property_id": "H-202",
+      "floor": 1,
+      "view": "park",
+      "connecting_with": [],
+      "distance_to_elevator_m": 6.0,
+      "corner": true,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "102",
+      "property_id": "H-202",
+      "floor": 1,
+      "view": "park",
+      "connecting_with": [
+        "103"
+      ],
+      "distance_to_elevator_m": 10.5,
+      "corner": false,
+      "accessible": true,
+      "area_sqm": 34.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "103",
+      "property_id": "H-202",
+      "floor": 1,
+      "view": "street",
+      "connecting_with": [
+        "102"
+      ],
+      "distance_to_elevator_m": 15.0,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 40.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "104",
+      "property_id": "H-202",
+      "floor": 1,
+      "view": "street",
+      "connecting_with": [],
+      "distance_to_elevator_m": 19.5,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "105",
+      "property_id": "H-202",
+      "floor": 1,
+      "view": "courtyard",
+      "connecting_with": [],
+      "distance_to_elevator_m": 24.0,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 34.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "106",
+      "property_id": "H-202",
+      "floor": 1,
+      "view": "courtyard",
+      "connecting_with": [
+        "107"
+      ],
+      "distance_to_elevator_m": 28.5,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 40.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "107",
+      "property_id": "H-202",
+      "floor": 1,
+      "view": "park",
+      "connecting_with": [
+        "106"
+      ],
+      "distance_to_elevator_m": 33.0,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "108",
+      "property_id": "H-202",
+      "floor": 1,
+      "view": "park",
+      "connecting_with": [],
+      "distance_to_elevator_m": 37.5,
+      "corner": true,
+      "accessible": false,
+      "area_sqm": 34.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "201",
+      "property_id": "H-202",
+      "floor": 2,
+      "view": "park",
+      "connecting_with": [],
+      "distance_to_elevator_m": 6.0,
+      "corner": true,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "202",
+      "property_id": "H-202",
+      "floor": 2,
+      "view": "park",
+      "connecting_with": [
+        "203"
+      ],
+      "distance_to_elevator_m": 10.5,
+      "corner": false,
+      "accessible": true,
+      "area_sqm": 34.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "203",
+      "property_id": "H-202",
+      "floor": 2,
+      "view": "street",
+      "connecting_with": [
+        "202"
+      ],
+      "distance_to_elevator_m": 15.0,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 40.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "204",
+      "property_id": "H-202",
+      "floor": 2,
+      "view": "street",
+      "connecting_with": [],
+      "distance_to_elevator_m": 19.5,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "205",
+      "property_id": "H-202",
+      "floor": 2,
+      "view": "courtyard",
+      "connecting_with": [],
+      "distance_to_elevator_m": 24.0,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 34.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "206",
+      "property_id": "H-202",
+      "floor": 2,
+      "view": "courtyard",
+      "connecting_with": [
+        "207"
+      ],
+      "distance_to_elevator_m": 28.5,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 40.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "207",
+      "property_id": "H-202",
+      "floor": 2,
+      "view": "park",
+      "connecting_with": [
+        "206"
+      ],
+      "distance_to_elevator_m": 33.0,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "208",
+      "property_id": "H-202",
+      "floor": 2,
+      "view": "park",
+      "connecting_with": [],
+      "distance_to_elevator_m": 37.5,
+      "corner": true,
+      "accessible": false,
+      "area_sqm": 34.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "301",
+      "property_id": "H-202",
+      "floor": 3,
+      "view": "park",
+      "connecting_with": [],
+      "distance_to_elevator_m": 6.0,
+      "corner": true,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "302",
+      "property_id": "H-202",
+      "floor": 3,
+      "view": "park",
+      "connecting_with": [
+        "303"
+      ],
+      "distance_to_elevator_m": 10.5,
+      "corner": false,
+      "accessible": true,
+      "area_sqm": 34.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "303",
+      "property_id": "H-202",
+      "floor": 3,
+      "view": "street",
+      "connecting_with": [
+        "302"
+      ],
+      "distance_to_elevator_m": 15.0,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 40.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "304",
+      "property_id": "H-202",
+      "floor": 3,
+      "view": "street",
+      "connecting_with": [],
+      "distance_to_elevator_m": 19.5,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "305",
+      "property_id": "H-202",
+      "floor": 3,
+      "view": "courtyard",
+      "connecting_with": [],
+      "distance_to_elevator_m": 24.0,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 34.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "306",
+      "property_id": "H-202",
+      "floor": 3,
+      "view": "courtyard",
+      "connecting_with": [
+        "307"
+      ],
+      "distance_to_elevator_m": 28.5,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 40.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "307",
+      "property_id": "H-202",
+      "floor": 3,
+      "view": "park",
+      "connecting_with": [
+        "306"
+      ],
+      "distance_to_elevator_m": 33.0,
+      "corner": false,
+      "accessible": false,
+      "area_sqm": 28.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    },
+    {
+      "room_id": "308",
+      "property_id": "H-202",
+      "floor": 3,
+      "view": "park",
+      "connecting_with": [],
+      "distance_to_elevator_m": 37.5,
+      "corner": true,
+      "accessible": false,
+      "area_sqm": 34.0,
+      "provenance": {
+        "source_doc_id": "LEGACY-IMPORT",
+        "extractor_version": "legacy-import",
+        "approver": "commissioning-team"
+      }
+    }
+  ]
+}

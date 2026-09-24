@@ -1,0 +1,211 @@
+{
+  "doc_id": "PR-2",
+  "property_id": "H-204",
+  "quality_band": "FAX",
+  "doc_type": "FLOOR_PLAN",
+  "floors": [
+    1,
+    2
+  ],
+  "pages": [
+    {
+      "floor": 1,
+      "render": "PR-2-f1.png",
+      "rooms": [
+        {
+          "room_id": "101",
+          "floor": 1,
+          "view": "park",
+          "connecting_with": [],
+          "distance_to_elevator_m": 6.0,
+          "corner": true,
+          "accessible": false,
+          "area_sqm": 28.0,
+          "confidence": {
+            "view": 0.58,
+            "distance_to_elevator_m": 0.52,
+            "accessible": 0.61
+          }
+        },
+        {
+          "room_id": "102",
+          "floor": 1,
+          "view": "park",
+          "connecting_with": [
+            "103"
+          ],
+          "distance_to_elevator_m": 10.5,
+          "corner": false,
+          "accessible": true,
+          "area_sqm": 34.0,
+          "confidence": {
+            "view": 0.58,
+            "distance_to_elevator_m": 0.52,
+            "accessible": 0.61
+          }
+        },
+        {
+          "room_id": "103",
+          "floor": 1,
+          "view": null,
+          "connecting_with": [],
+          "distance_to_elevator_m": 15.0,
+          "corner": false,
+          "accessible": false,
+          "area_sqm": 40.0,
+          "confidence": {
+            "view": 0.2,
+            "distance_to_elevator_m": 0.52,
+            "accessible": 0.61
+          }
+        },
+        {
+          "room_id": "104",
+          "floor": 1,
+          "view": "street",
+          "connecting_with": [],
+          "distance_to_elevator_m": 19.5,
+          "corner": false,
+          "accessible": false,
+          "area_sqm": 28.0,
+          "confidence": {
+            "view": 0.58,
+            "distance_to_elevator_m": 0.52,
+            "accessible": 0.61
+          }
+        },
+        {
+          "room_id": "105",
+          "floor": 1,
+          "view": "courtyard",
+          "connecting_with": [],
+          "distance_to_elevator_m": 24.0,
+          "corner": false,
+          "accessible": false,
+          "area_sqm": 34.0,
+          "confidence": {
+            "view": 0.58,
+            "distance_to_elevator_m": 0.52,
+            "accessible": 0.61
+          }
+        },
+        {
+          "room_id": "106",
+          "floor": 1,
+          "view": "courtyard",
+          "connecting_with": [],
+          "distance_to_elevator_m": 28.5,
+          "corner": true,
+          "accessible": false,
+          "area_sqm": 40.0,
+          "confidence": {
+            "view": 0.58,
+            "distance_to_elevator_m": 0.52,
+            "accessible": 0.61
+          }
+        }
+      ]
+    },
+    {
+      "floor": 2,
+      "render": "PR-2-f2.png",
+      "rooms": [
+        {
+          "room_id": "201",
+          "floor": 2,
+          "view": "park",
+          "connecting_with": [],
+          "distance_to_elevator_m": 6.0,
+          "corner": true,
+          "accessible": false,
+          "area_sqm": 28.0,
+          "confidence": {
+            "view": 0.58,
+            "distance_to_elevator_m": 0.52,
+            "accessible": 0.61
+          }
+        },
+        {
+          "room_id": "202",
+          "floor": 2,
+          "view": "park",
+          "connecting_with": [
+            "203"
+          ],
+          "distance_to_elevator_m": 10.5,
+          "corner": false,
+          "accessible": true,
+          "area_sqm": 34.0,
+          "confidence": {
+            "view": 0.58,
+            "distance_to_elevator_m": 0.52,
+            "accessible": 0.61
+          }
+        },
+        {
+          "room_id": "203",
+          "floor": 2,
+          "view": "street",
+          "connecting_with": [
+            "202"
+          ],
+          "distance_to_elevator_m": 15.0,
+          "corner": false,
+          "accessible": false,
+          "area_sqm": 40.0,
+          "confidence": {
+            "view": 0.58,
+            "distance_to_elevator_m": 0.52,
+            "accessible": 0.61
+          }
+        },
+        {
+          "room_id": "204",
+          "floor": 2,
+          "view": "street",
+          "connecting_with": [],
+          "distance_to_elevator_m": null,
+          "corner": false,
+          "accessible": false,
+          "area_sqm": 28.0,
+          "confidence": {
+            "view": 0.58,
+            "distance_to_elevator_m": 0.18,
+            "accessible": 0.61
+          }
+        },
+        {
+          "room_id": "205",
+          "floor": 2,
+          "view": "courtyard",
+          "connecting_with": [],
+          "distance_to_elevator_m": 24.0,
+          "corner": false,
+          "accessible": false,
+          "area_sqm": 34.0,
+          "confidence": {
+            "view": 0.58,
+            "distance_to_elevator_m": 0.52,
+            "accessible": 0.61
+          }
+        },
+        {
+          "room_id": "206",
+          "floor": 2,
+          "view": "courtyard",
+          "connecting_with": [],
+          "distance_to_elevator_m": 28.5,
+          "corner": true,
+          "accessible": false,
+          "area_sqm": 40.0,
+          "confidence": {
+            "view": 0.58,
+            "distance_to_elevator_m": 0.52,
+            "accessible": 0.61
+          }
+        }
+      ]
+    }
+  ],
+  "note": "1987 fax; two rooms need a human"
+}

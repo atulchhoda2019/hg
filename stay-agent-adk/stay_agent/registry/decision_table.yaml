@@ -1,0 +1,41 @@
+version: stay-decisions-v1
+# Adapt by choosing, not rewriting (I8). Each decision type names a decider; swapping
+# Gemma for Gemini for rules is an edit here, not a refactor. `STAY_DECIDER_MODE` in the
+# environment can pin every row to one decider (gemini_only | gemma_only | rules_only)
+# for an A/B run without touching this file.
+deciders:
+  default: rules
+
+decisions:
+  ambiguity_band:
+    decider: gemma
+    question: How much of this stay request is already specified?
+    options: [HIGH, MEDIUM, LOW]
+    fallback: rules
+
+  amenity_intent_route:
+    decider: gemma
+    question: Which capability does this guest message want?
+    options: [SEARCH, QUOTE, BOOK, UPSELL, CANCEL, EXPLAIN, OTHER]
+    fallback: rules
+
+  open_ended_reply:
+    decider: gemini
+    question: Compose the guest-facing reply.
+    options: []
+    fallback: rules
+
+  upsell_eligibility:
+    decider: rules
+    question: May this reservation be offered an attribute upsell?
+    options: [ELIGIBLE, NOT_ELIGIBLE]
+    fallback: rules
+
+# Modality doctrine, enforced by code and stated in the prompt: discovery is
+# conversational, money is a button, and an irreversible action never executes in the
+# same model turn that proposed it.
+modality:
+  discovery: conversational
+  money: direct_confirm_button
+  low_ambiguity: ask_one_question
+  irreversible_same_turn: false
