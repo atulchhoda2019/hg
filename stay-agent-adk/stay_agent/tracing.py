@@ -11,11 +11,10 @@ on a corridor or gate step, not lines in a file.
     console  - spans to stdout, for local work
     cloud    - Google Cloud Trace in `GOOGLE_CLOUD_PROJECT`
 
-A managed runtime (Agent Runtime, Cloud Run with telemetry collection) installs its own
-provider and exporter. Installing a second one there is worse than useless: the first
-provider to be set wins, so a stay-agent exporter that loads at import time would silently
-capture ADK's spans too and ship them wherever it was pointed. `cloud` mode therefore
-defers to an already-installed provider instead of competing with it.
+Under a managed runtime (Agent Runtime, Cloud Run with telemetry collection) this exporter
+is the one that carries ADK's spans as well: the first provider set wins, and on Agent
+Runtime nothing has set one by the time `stay_agent` imports. That makes pointing it at the
+right project load-bearing for every span, not just ours.
 """
 
 from __future__ import annotations
@@ -38,6 +37,8 @@ SERVICE_NAME = "stay-agent-adk"
 # "Invalid project id in name!", and managed runtimes are happy to export the number.
 _PROJECT_ID = re.compile(r"[a-z][a-z0-9-]{4,28}[a-z0-9]")
 
+_PROJECT_ENV_VARS = ("GOOGLE_CLOUD_PROJECT", "GOOGLE_CLOUD_QUOTA_PROJECT", "GCLOUD_PROJECT")
+
 _log = logging.getLogger(__name__)
 
 _configured = False
@@ -45,11 +46,6 @@ _configured = False
 
 def mode() -> str:
     return os.environ.get("STAY_TRACE", "off").strip().lower()
-
-
-def _managed_provider_installed() -> bool:
-    """Whether something has already installed a real SDK provider (and thus an exporter)."""
-    return isinstance(trace.get_tracer_provider(), TracerProvider)
 
 
 def _cloud_project() -> str:
@@ -61,14 +57,26 @@ def _cloud_project() -> str:
     project on the ambient credentials, which on Google infrastructure is the id.
     """
     candidate = os.environ.get("GOOGLE_CLOUD_PROJECT", "").strip()
-    if not _PROJECT_ID.fullmatch(candidate):
-        import google.auth
+    if _PROJECT_ID.fullmatch(candidate):
+        return candidate
 
-        _, candidate = google.auth.default()
-        candidate = (candidate or "").strip()
-    if not candidate:
-        raise RuntimeError("STAY_TRACE=cloud needs GOOGLE_CLOUD_PROJECT or ambient credentials")
-    return candidate
+    import google.auth
+
+    # The same env vars are what `google.auth.default` prefers, so they have to be out of
+    # the way for it to reach the credentials and the metadata server underneath them.
+    shadowed = {name: os.environ.pop(name, None) for name in _PROJECT_ENV_VARS}
+    try:
+        _, ambient = google.auth.default()
+    finally:
+        os.environ.update({name: value for name, value in shadowed.items() if value is not None})
+
+    ambient = str(ambient or "").strip()
+    if not _PROJECT_ID.fullmatch(ambient):
+        raise RuntimeError(
+            f"STAY_TRACE=cloud found no project id to write spans to "
+            f"(GOOGLE_CLOUD_PROJECT={candidate!r}, credentials={ambient!r})"
+        )
+    return ambient
 
 
 def setup_tracing(service_name: str = SERVICE_NAME) -> bool:
@@ -83,11 +91,6 @@ def setup_tracing(service_name: str = SERVICE_NAME) -> bool:
     chosen = mode()
     if chosen == "off":
         return False
-
-    if chosen == "cloud" and _managed_provider_installed():
-        _log.info("stay-agent tracing: deferring to the runtime's own tracer provider")
-        _configured = True
-        return True
 
     provider = TracerProvider(resource=Resource.create({"service.name": service_name}))
     if chosen == "cloud":

@@ -6,6 +6,7 @@ object in a slot ends the conversation with a TypeError rather than a booking.
 
 from __future__ import annotations
 
+import os
 from datetime import date, timedelta
 
 import pytest
@@ -83,27 +84,30 @@ def test_an_unknown_exporter_fails_loudly(monkeypatch):
         tracing.setup_tracing()
 
 
-def test_cloud_mode_defers_to_a_runtime_that_already_installed_a_provider(monkeypatch, spans):
-    # Agent Runtime exports spans itself; a second exporter cannot replace the provider,
-    # it can only win the race at import time and take ADK's spans with it.
-    monkeypatch.setattr(tracing, "_configured", False)
-    monkeypatch.setenv("STAY_TRACE", "cloud")
-
-    def refuse(*_args, **_kwargs):
-        raise AssertionError("installed a second exporter under a managed runtime")
-
-    monkeypatch.setattr(tracing, "_cloud_project", refuse)
-
-    assert tracing.setup_tracing() is True
-
-
 @pytest.mark.parametrize("unusable", ["projects/ihgapp", "136933198325", ""])
 def test_an_unusable_project_env_falls_back_to_the_ambient_credentials(monkeypatch, unusable):
-    # Agent Runtime exports the project number, which Cloud Trace rejects outright.
+    # Agent Runtime exports the project number, which Cloud Trace rejects outright. The
+    # fake stands in for the real `google.auth.default`, which prefers these same env
+    # vars over the credentials and would otherwise hand the bad value straight back.
     monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", unusable)
-    monkeypatch.setattr("google.auth.default", lambda *a, **k: (object(), "ihgapp"))
+
+    def ambient(*_args, **_kwargs):
+        overrides = [name for name in tracing._PROJECT_ENV_VARS if name in os.environ]
+        assert not overrides, f"env would override the credentials: {overrides}"
+        return object(), "ihgapp"
+
+    monkeypatch.setattr("google.auth.default", ambient)
 
     assert tracing._cloud_project() == "ihgapp"
+    assert os.environ["GOOGLE_CLOUD_PROJECT"] == unusable
+
+
+def test_no_resolvable_project_id_fails_rather_than_dropping_spans(monkeypatch):
+    monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "136933198325")
+    monkeypatch.setattr("google.auth.default", lambda *a, **k: (object(), "136933198325"))
+
+    with pytest.raises(RuntimeError, match="no project id"):
+        tracing._cloud_project()
 
 
 def test_search_and_corridor_steps_are_spans_with_the_attributes_an_auditor_wants(
