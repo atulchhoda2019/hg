@@ -24,10 +24,15 @@ import argparse
 import os
 import sys
 
+# Pinned, not floated: the agent travels to Agent Runtime as a cloudpickle, and a remote
+# google-adk older than the one that pickled it fails to unpickle at startup with
+# "No module named google.adk.utils._callable_utils". Keep these at the versions the
+# deploying environment actually has.
 REQUIREMENTS = [
-    "google-cloud-aiplatform[adk,agent_engines]>=1.95.0",
-    "google-adk>=1.27.0",
-    "pydantic>=2.7",
+    "google-cloud-aiplatform[adk,agent_engines]==2.2.0",
+    "google-adk==2.9.2",
+    "google-genai==2.25.0",
+    "pydantic==2.13.5",
     "pyyaml>=6.0",
     "opentelemetry-exporter-gcp-trace>=1.7.0",
 ]
