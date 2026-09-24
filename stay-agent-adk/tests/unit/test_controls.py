@@ -50,7 +50,7 @@ def test_price_guard_blocks_any_amount_when_nothing_was_quoted(tool_context):
     blocked = callbacks.price_guard(tool_context, model_reply("Totals come to $1,499.00."))
 
     assert blocked is not None
-    assert tool_context.state["temp:audit"][-1]["event"] == "price_guard.blocked"
+    assert tool_context.state["audit"][-1]["event"] == "price_guard.blocked"
 
 
 def test_price_guard_catches_the_hallucination_drill(tool_context):
@@ -150,7 +150,7 @@ def test_the_audit_trail_hashes_arguments_and_records_receipts(tool_context):
         {"status": "COMMITTED", "receipt": {"receipt_id": "RC-1", "verified": True}},
     )
 
-    entry = tool_context.state["temp:audit"][-1]
+    entry = tool_context.state["audit"][-1]
     assert entry["tool"] == "confirm_action" and entry["receipt_id"] == "RC-1"
     assert "super-secret-nonce" not in str(entry)
     assert len(entry["args_sha256"]) == 16

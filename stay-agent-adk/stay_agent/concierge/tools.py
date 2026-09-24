@@ -13,6 +13,7 @@ from google.adk.tools.tool_context import ToolContext
 
 from ..contracts import RoomHit
 from ..mocks import attribute_store, inventory, rate_engine
+from ..tracing import span
 from . import corridor
 
 
@@ -23,7 +24,7 @@ def _state(tool_context: ToolContext) -> Any:
 def search_rooms(tool_context: ToolContext, limit: int = 5) -> dict[str, Any]:
     """Find rooms matching the guest's typed slots. Attributes and provenance, no prices.
 
-    Reads `temp:slots`, filters the committed attribute version with hard predicates, and
+    Reads `slots`, filters the committed attribute version with hard predicates, and
     joins a prose snippet. Prices never appear in a search result: they are a live read.
     """
     state = _state(tool_context)
@@ -66,6 +67,18 @@ def search_rooms(tool_context: ToolContext, limit: int = 5) -> dict[str, Any]:
         )
 
     hits.sort(key=lambda hit: (-hit.floor, -(hit.distance_to_elevator_m or 0)))
+    with span(
+        "concierge.search_rooms",
+        property_id=property_id,
+        attribute_version=version,
+        check_in=check_in.isoformat(),
+        check_out=check_out.isoformat(),
+        hits=len(hits),
+        **{f"slot.{key}": value for key, value in slots.items()},
+    ):
+        # The span is the point of the search for an auditor: which version answered, under
+        # which slots, with how many rooms. The filtering above is pure and needs no timing.
+        pass
     return {
         "status": "OK" if hits else "NO_MATCH",
         "property_id": property_id,
@@ -81,14 +94,19 @@ def get_live_quote(room_id: str, tool_context: ToolContext) -> dict[str, Any]:
     state = _state(tool_context)
     property_id = corridor.property_id(state)
     check_in, check_out = corridor.stay_dates(state)
-    if not inventory.is_available(property_id, room_id, check_in, check_out):
-        return {"status": "SOLD_OUT", "room_id": room_id}
-    try:
-        quote = rate_engine.quote(property_id, room_id, check_in, check_out)
-    except rate_engine.RateUnavailable as exc:
-        return {"status": "UNAVAILABLE", "detail": str(exc), "retryable": True}
-    corridor.remember_quote(state, quote)
-    return {"status": "OK", "quote": quote.model_dump(mode="json")}
+    with span("concierge.get_live_quote", property_id=property_id, room_id=room_id) as current:
+        if not inventory.is_available(property_id, room_id, check_in, check_out):
+            current.set_attribute("status", "SOLD_OUT")
+            return {"status": "SOLD_OUT", "room_id": room_id}
+        try:
+            quote = rate_engine.quote(property_id, room_id, check_in, check_out)
+        except rate_engine.RateUnavailable as exc:
+            current.set_attribute("status", "UNAVAILABLE")
+            return {"status": "UNAVAILABLE", "detail": str(exc), "retryable": True}
+        corridor.remember_quote(state, quote)
+        current.set_attribute("status", "OK")
+        current.set_attribute("rate_version", quote.rate_version)
+        return {"status": "OK", "quote": quote.model_dump(mode="json")}
 
 
 def explain_room(room_id: str, tool_context: ToolContext) -> dict[str, Any]:

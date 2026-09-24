@@ -17,6 +17,7 @@ from google.adk.events import Event
 from google.genai import types
 
 from ..contracts import ExtractedRoom, GateDecision
+from ..tracing import span
 from . import commit as commit_module
 from . import queue
 from .classify_agent import classify
@@ -28,11 +29,21 @@ from .validate_agent import validate
 
 async def run_job(doc_id: str) -> dict[str, Any]:
     """Intake -> classify -> extract -> validate -> gate -> commit or escalate."""
-    job = intake(doc_id)
-    doc_class = await classify(job["document"], doc_id)
-    rooms = await extract(job)
-    report = validate(job, rooms)
-    decision = gate(doc_class, rooms, report)
+    with span("room_truth.job", doc_id=doc_id) as current:
+        job = intake(doc_id)
+        with span("room_truth.classify", job_id=job["job_id"]) as classify_span:
+            doc_class = await classify(job["document"], doc_id)
+            classify_span.set_attribute("quality_band", doc_class.quality_band)
+        with span("room_truth.extract", floors=len(job["document"].get("floors", []))) as extract_span:
+            rooms = await extract(job)
+            extract_span.set_attribute("rooms", len(rooms))
+        with span("room_truth.validate") as validate_span:
+            report = validate(job, rooms)
+            validate_span.set_attribute("findings", len(report.findings))
+        decision = gate(doc_class, rooms, report)
+        current.set_attribute("quality_band", doc_class.quality_band)
+        current.set_attribute("decision", decision.decision)
+        current.set_attribute("reason", decision.reason)
 
     result: dict[str, Any] = {
         "job_id": job["job_id"],

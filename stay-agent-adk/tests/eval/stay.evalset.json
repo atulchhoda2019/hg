@@ -194,7 +194,7 @@
         "app_name": "stay_agent",
         "user_id": "G-2001",
         "state": {
-          "temp:slots": {
+          "slots": {
             "property_id": "H-201",
             "check_in": "2026-06-12",
             "check_out": "2026-06-14",
@@ -248,7 +248,7 @@
         "app_name": "stay_agent",
         "user_id": "G-2001",
         "state": {
-          "temp:slots": {
+          "slots": {
             "property_id": "H-201",
             "check_in": "2026-06-12",
             "check_out": "2026-06-14",
@@ -308,7 +308,7 @@
         "app_name": "stay_agent",
         "user_id": "G-2001",
         "state": {
-          "temp:slots": {
+          "slots": {
             "property_id": "H-201",
             "check_in": "2026-06-12",
             "check_out": "2026-06-14",
@@ -362,7 +362,7 @@
         "app_name": "stay_agent",
         "user_id": "G-2001",
         "state": {
-          "temp:slots": {
+          "slots": {
             "property_id": "H-201",
             "check_in": "2026-06-12",
             "check_out": "2026-06-14",
@@ -429,7 +429,7 @@
         "app_name": "stay_agent",
         "user_id": "G-2001",
         "state": {
-          "temp:slots": {
+          "slots": {
             "property_id": "H-201",
             "check_in": "2026-06-12",
             "check_out": "2026-06-14",
@@ -483,7 +483,7 @@
         "app_name": "stay_agent",
         "user_id": "G-2001",
         "state": {
-          "temp:slots": {
+          "slots": {
             "property_id": "H-201",
             "check_in": "2026-06-12",
             "check_out": "2026-06-14",
@@ -530,7 +530,7 @@
         "app_name": "stay_agent",
         "user_id": "G-2001",
         "state": {
-          "temp:slots": {
+          "slots": {
             "property_id": "H-201",
             "check_in": "2026-06-12",
             "check_out": "2026-06-14",
@@ -584,7 +584,7 @@
         "app_name": "stay_agent",
         "user_id": "G-2001",
         "state": {
-          "temp:slots": {
+          "slots": {
             "property_id": "H-201",
             "check_in": "2026-06-12",
             "check_out": "2026-06-14",
@@ -631,7 +631,7 @@
         "app_name": "stay_agent",
         "user_id": "G-2001",
         "state": {
-          "temp:slots": {
+          "slots": {
             "property_id": "H-201",
             "check_in": "2026-06-12",
             "check_out": "2026-06-14",

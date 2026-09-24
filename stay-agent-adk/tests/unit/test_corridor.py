@@ -31,7 +31,7 @@ def test_search_never_returns_a_price(tool_context):
 
 
 def test_search_applies_hard_predicates_not_vibes(tool_context):
-    tool_context.state["temp:slots"] |= {"min_floor": 6, "view": "park"}
+    tool_context.state["slots"] |= {"min_floor": 6, "view": "park"}
 
     rooms = search_rooms(tool_context)["rooms"]
 
@@ -66,13 +66,13 @@ def test_a_guessed_nonce_is_refused_and_the_proposal_survives(tool_context):
     propose_action("BOOK", tool_context, quote_id=quote["quote_id"])
 
     assert confirm_action("not-the-nonce", tool_context)["status"] == "BAD_NONCE"
-    assert tool_context.state["temp:pending_action"], "a bad guess must not clear the proposal"
+    assert tool_context.state["pending_action"], "a bad guess must not clear the proposal"
 
 
 def test_an_expired_preview_cannot_be_confirmed(tool_context):
     quote = get_live_quote("704", tool_context)["quote"]
     preview = propose_action("BOOK", tool_context, quote_id=quote["quote_id"])
-    pending = tool_context.state["temp:pending_action"]
+    pending = tool_context.state["pending_action"]
     pending["expires_at"] = (datetime.now(timezone.utc) - timedelta(seconds=1)).isoformat()
 
     outcome = confirm_action(preview["proposal"]["nonce"], tool_context)
@@ -83,7 +83,7 @@ def test_an_expired_preview_cannot_be_confirmed(tool_context):
 
 def test_a_replayed_confirmation_books_exactly_one_room(tool_context):
     first = book(tool_context)
-    tool_context.state["temp:pending_action"] = {"replay": "yes"}  # a duplicate confirm arrives
+    tool_context.state["pending_action"] = {"replay": "yes"}  # a duplicate confirm arrives
 
     assert confirm_action("whatever", tool_context)["status"] in {"BAD_NONCE", "NO_PENDING_ACTION"}
     assert len(reservations.for_guest("G-2001")) == 1
@@ -148,7 +148,7 @@ def test_proposing_without_a_quote_is_refused(tool_context):
 
 def test_an_expired_quote_cannot_be_proposed(tool_context):
     quote = get_live_quote("704", tool_context)["quote"]
-    stored = tool_context.state["temp:quotes"][quote["quote_id"]]
+    stored = tool_context.state["quotes"][quote["quote_id"]]
     stored["expires_at"] = (datetime.now(timezone.utc) - timedelta(minutes=1)).isoformat()
 
     assert propose_action("BOOK", tool_context, quote_id=quote["quote_id"])["status"] == (
@@ -206,11 +206,11 @@ def test_explain_room_answers_with_provenance_not_prose(tool_context):
 
 def test_quotes_expire_out_of_state_rather_than_lingering(tool_context):
     quote = get_live_quote("704", tool_context)["quote"]
-    tool_context.state["temp:quotes"][quote["quote_id"]]["expires_at"] = (
+    tool_context.state["quotes"][quote["quote_id"]]["expires_at"] = (
         datetime.now(timezone.utc) - timedelta(seconds=1)
     ).isoformat()
 
     get_live_quote("605", tool_context)
 
-    assert quote["quote_id"] not in tool_context.state["temp:quotes"]
+    assert quote["quote_id"] not in tool_context.state["quotes"]
     assert rate_engine.QUOTE_TTL.total_seconds() > 0

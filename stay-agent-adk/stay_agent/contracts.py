@@ -11,7 +11,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 Ambiguity = Literal["HIGH", "MEDIUM", "LOW"]
 ActionKind = Literal["BOOK", "ATTRIBUTE_UPSELL", "CANCEL"]
@@ -26,8 +26,8 @@ class SearchSlots(BaseModel):
 
     property_id: str | None = None
     market: str | None = None
-    check_in: date | None = None
-    check_out: date | None = None
+    check_in: str | None = Field(default=None, description="ISO date, YYYY-MM-DD")
+    check_out: str | None = Field(default=None, description="ISO date, YYYY-MM-DD")
     guests: int = 2
     min_floor: int | None = None
     view: Literal["park", "street", "courtyard", "any"] = "any"
@@ -35,6 +35,39 @@ class SearchSlots(BaseModel):
     max_distance_to_elevator_m: float | None = None
     accessible: bool | None = None
     ambiguity: Ambiguity = "MEDIUM"
+
+    @field_validator("check_in", "check_out", mode="before")
+    @classmethod
+    def _iso_date(cls, value: object) -> str | None:
+        """ISO strings, not `date` objects: these slots live in ADK session state, which is
+        serialized to JSON on every turn."""
+        if value in (None, ""):
+            return None
+        if isinstance(value, date):
+            return value.isoformat()
+        return _parse_date(str(value)).isoformat()
+
+
+def _parse_date(text: str) -> date:
+    """ISO first; a yearless month-day is read as the next such day.
+
+    Guests say "12 June", and a slot extractor that throws the whole turn away over the
+    missing year is worse than one that assumes the next one.
+    """
+    text = text.strip()
+    try:
+        return date.fromisoformat(text)
+    except ValueError:
+        pass
+    today = date.today()
+    for fmt in ("%d %B", "%B %d", "%d %b", "%b %d", "%m-%d", "%m/%d"):
+        try:
+            parsed = datetime.strptime(text, fmt).date()
+        except ValueError:
+            continue
+        candidate = parsed.replace(year=today.year)
+        return candidate if candidate >= today else candidate.replace(year=today.year + 1)
+    raise ValueError(f"not a date this app can read: {text!r}")
 
 
 class Provenance(BaseModel):

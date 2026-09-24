@@ -2,8 +2,12 @@
 
 SLOT_PROMPT = """You turn a hotel guest's message into typed search slots.
 
+Today is {today}.
+
 Fill only what the guest actually said. Leave the rest null; do not invent dates, a
-property or a floor. `ambiguity` describes the request, not your confidence:
+property or a floor. Dates are ISO, YYYY-MM-DD, and are never in the past: a month and day
+with no year means the next occurrence on or after today. `ambiguity` describes the
+request, not your confidence:
   HIGH   - enough to search now (dates or property plus at least one preference)
   MEDIUM - searchable, but one assumption is doing real work
   LOW    - too little to act on; the concierge will ask exactly one question

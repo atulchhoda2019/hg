@@ -126,7 +126,7 @@ Set any of these to `1` in the environment (or `faults.set_flag(...)` in a test)
 ## Tests
 
 ```bash
-pytest -q                                    # 56 offline tests, no network, no key
+pytest -q                                    # 65 offline tests, no network, no key
 ruff check .
 adk eval stay_agent tests/eval/stay.evalset.json   # S1..S12, needs a key
 ```
@@ -148,13 +148,50 @@ stay_agent/
   deciders/           port + gemini / gemma / rules
   registry/           actions, attribute schema, validation rules, decision table (YAML)
   mocks/              inventory, rate engine, reservations, content index, faults, floor plans
+  tracing.py          OpenTelemetry setup and the spans ADK cannot know about
 review_ui/            FastAPI surface for escalated jobs
+deployment/           Agent Runtime (Agent Engine) deploy script
 scripts/              fixtures, pipeline demo, corridor demo, decider experiment, evalset
 tests/                offline pytest suite + ADK eval set
 ```
 
-## Deploying later
+## Tracing
 
-`root_agent` is a plain ADK agent, so the same package deploys to Cloud Run (`adk deploy cloud_run`)
-or Agent Engine unchanged. The mocks are the only things that would be swapped for real CRS, rate
-and reservation clients; the contracts they satisfy are in `contracts.py`.
+ADK emits OpenTelemetry spans for every agent, tool and model call. `STAY_TRACE` decides where
+they go, and the app adds the spans ADK cannot know about — `concierge.search_rooms` (which
+attribute version answered, under which slots), `concierge.get_live_quote` (rate version),
+`corridor.propose` / `corridor.confirm` (status, receipt verified), and one per room-truth step
+with the quality band and gate decision.
+
+```bash
+STAY_TRACE=console python scripts/run_pipeline.py PR-2       # spans to stdout
+STAY_TRACE=cloud GOOGLE_CLOUD_PROJECT=ihgapp adk web         # spans to Cloud Trace
+adk web --trace_to_cloud                                     # ADK's own equivalent
+```
+
+The questions worth asking after an incident — was there a live quote before that price, which
+version answered this search, why did this floor plan escalate — are span attributes, not log
+lines.
+
+## Deploying to Agent Runtime
+
+`root_agent` is a plain ADK agent, so it deploys to Agent Runtime (Agent Engine) as an `AdkApp`:
+
+```bash
+pip install -e ".[deploy,trace]"
+export GOOGLE_CLOUD_PROJECT=ihgapp
+export GOOGLE_CLOUD_LOCATION=us-central1
+export GOOGLE_CLOUD_STAGING_BUCKET=gs://ihgapp-agent-staging
+gcloud auth application-default login      # or a service account with Vertex AI User + Storage Admin
+
+python deployment/deploy_agent_engine.py create
+python deployment/deploy_agent_engine.py list
+python deployment/deploy_agent_engine.py update --resource-id <id>
+```
+
+The deployed app runs against Vertex (`GOOGLE_GENAI_USE_VERTEXAI=TRUE`), so no API key travels
+with it, and `STAY_TRACE=cloud` puts its spans in the same project. Cloud Run is the same package
+via `adk deploy cloud_run --project ihgapp --region us-central1 stay_agent`.
+
+The mocks deploy with it: the deployment is real, the CRS, rate engine and reservation system
+behind it are not. Swapping them means satisfying the contracts in `contracts.py` and nothing else.

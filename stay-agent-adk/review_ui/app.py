@@ -19,7 +19,9 @@ from pydantic import BaseModel
 
 from stay_agent.room_truth import pipeline, queue
 from stay_agent.room_truth.gate_agent import waivable
+from stay_agent.tracing import setup_tracing
 
+setup_tracing("stay-agent-adk-review-ui")
 app = FastAPI(title="Room truth review")
 
 

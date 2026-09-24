@@ -74,9 +74,40 @@ async def generate_typed(
     if not text:
         raise ModelUnavailable("empty model response")
     try:
-        return schema.model_validate_json(text)
+        return schema.model_validate_json(_json_object(text))
     except ValidationError as exc:
         raise ModelUnavailable(f"model returned an off-schema object: {exc}") from exc
+
+
+def _json_object(text: str) -> str:
+    """The first balanced ``{...}`` in the text.
+
+    Models without server-side schema enforcement (Gemma) often narrate before the object.
+    Narration around a well-formed object is tolerated; a wrong object still fails.
+    """
+    start = text.find("{")
+    if start == -1:
+        return text
+    depth = 0
+    in_string = escaped = False
+    for i, char in enumerate(text[start:], start):
+        if in_string:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_string = False
+            continue
+        if char == '"':
+            in_string = True
+        elif char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return text[start : i + 1]
+    return text
 
 
 def text_part(text: str) -> types.Part:

@@ -25,7 +25,7 @@ class Ctx:
 
     def __init__(self) -> None:
         self.state: dict[str, Any] = {
-            "temp:slots": {
+            "slots": {
                 "property_id": "H-201",
                 "check_in": "2026-06-12",
                 "check_out": "2026-06-14",
